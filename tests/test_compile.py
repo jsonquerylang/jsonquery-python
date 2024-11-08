@@ -66,6 +66,48 @@ class CompileTestCase(unittest.TestCase):
             [19, 23, 32],
         )
 
+    def test_options1(self):
+        """Test defining a custom function"""
+
+        def times(value):
+            return lambda data: list(map(lambda item: item * value, data))
+
+        query = ["times", 2]
+
+        evaluate = compile(query, {"functions": {"times": times}})
+
+        self.assertEqual(evaluate([2, 3, 4]), [4, 6, 8])
+        self.assertEqual(evaluate([-4, 5]), [-8, 10])
+
+    def test_options2(self):
+        """Test define options but no custom function"""
+
+        query = ["get", "name"]
+        evaluate = compile(query, {})
+
+        self.assertEqual(evaluate({"name": "Joe"}), "Joe")
+
+    def test_options3(self):
+        """Test defining a custom function that uses compile"""
+
+        def by_times(path, value):
+            getter = compile(path)
+
+            return lambda data: list(map(lambda item: getter(item) * value, data))
+
+        query = ["by_times", ["get", "score"], 2]
+        evaluate = compile(query, {"functions": {"by_times": by_times}})
+
+        self.assertEqual(
+            evaluate(
+                [
+                    {"score": 2},
+                    {"score": 4},
+                ]
+            ),
+            [4, 8],
+        )
+
 
 def go(data, query):
     evaluate = compile(query)

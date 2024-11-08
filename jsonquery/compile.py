@@ -1,12 +1,22 @@
-def compile(query):
+from jsonquery.functions import get_functions
+
+
+def compile(query, options=None):
     """
     Compile a JSON Query
 
     :param query: A JSON Query
+    :param options: Can an object with custom functions
     :return: Returns a function which can execute the query
     """
 
     fn_name, *args = query
+
+    functions = (
+        {**built_in_functions, **options["functions"]}
+        if (options is not None) and ("functions" in options)
+        else built_in_functions
+    )
 
     if fn_name not in functions:
         raise SyntaxError(f'Unknown function "{fn_name}"')
@@ -16,30 +26,4 @@ def compile(query):
     return fn(*args)
 
 
-def get(*path: []):
-    def getter(item):
-        value = item
-
-        for p in path:
-            value = value[p] if (value is not None) else None
-
-        return value
-
-    return getter
-
-
-def sort(path=None, direction="asc"):
-    if path is None:
-        path = ["get"]
-
-    getter = compile(path)
-
-    return lambda data: sorted(
-        data,
-        key=getter,
-        reverse=direction == "desc",
-    )
-
-
-# TODO: implement all functions
-functions = {"get": get, "sort": sort}
+built_in_functions = get_functions(compile)
