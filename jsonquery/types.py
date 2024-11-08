@@ -1,4 +1,4 @@
-from typing import TypeAlias, List, Mapping, TypedDict, Callable, NotRequired, Union
+from typing import TypeAlias, List, Mapping, TypedDict, Callable, NotRequired
 
 JsonType: TypeAlias = List["JsonValueType"] | Mapping[str, "JsonValueType"]
 JsonValueType: TypeAlias = str | int | float | None | JsonType
@@ -8,5 +8,5 @@ JsonValueType: TypeAlias = str | int | float | None | JsonType
 JsonQueryType: TypeAlias = list[str | JsonType]
 
 
-class OptionsType(TypedDict):
+class JsonQueryOptions(TypedDict):
     functions: NotRequired[Mapping[str, Callable]]

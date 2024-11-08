@@ -1,9 +1,9 @@
-from jsonquery.types import JsonType, JsonQueryType, OptionsType
+from jsonquery.types import JsonType, JsonQueryType, JsonQueryOptions
 from jsonquery.compile import compile
 
 
 def jsonquery(
-    data: JsonType, query: JsonQueryType, options: OptionsType | None = None
+    data: JsonType, query: JsonQueryType, options: JsonQueryOptions | None = None
 ) -> JsonType:
     """
     Compile and evaluate a query
