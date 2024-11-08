@@ -1,7 +1,11 @@
+from jsonquery.types import JsonQueryType, JsonType, OptionsType
+from typing import Callable
 from jsonquery.functions import get_functions
 
 
-def compile(query, options=None):
+def compile(
+    query: JsonQueryType, options: OptionsType | None = None
+) -> Callable[[JsonType], JsonType]:
     """
     Compile a JSON Query
 
