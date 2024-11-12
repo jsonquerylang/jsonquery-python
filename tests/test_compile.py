@@ -1,4 +1,6 @@
 import unittest
+import json
+from pprint import pprint
 from jsonquery import compile
 
 friends = [
@@ -107,6 +109,18 @@ class CompileTestCase(unittest.TestCase):
             ),
             [4, 8],
         )
+
+    def test_suite(self):
+        """Run the official compile test-suite"""
+
+        with open("./test-suite/compile.test.json", "r") as read_file:
+            suite = json.load(read_file)
+
+            for test in suite["tests"]:
+                description = "[" + test["category"] + "] " + test["description"]
+                with self.subTest(message=description):
+                    evaluate = compile(test["query"])
+                    self.assertEqual(evaluate(test["input"]), test["output"])
 
 
 def go(data, query):
