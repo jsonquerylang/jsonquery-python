@@ -14,20 +14,26 @@ def compile(
     :return: Returns a function which can execute the query
     """
 
-    fn_name, *args = query
+    if isinstance(query, list):
+        # a function like ["sort", ["get", "name"], "desc"]
+        fn_name, *args = query
 
-    functions = (
-        {**built_in_functions, **options["functions"]}
-        if (options is not None) and ("functions" in options)
-        else built_in_functions
-    )
+        functions = (
+            {**built_in_functions, **options["functions"]}
+            if (options is not None) and ("functions" in options)
+            else built_in_functions
+        )
 
-    if fn_name not in functions:
-        raise SyntaxError(f'Unknown function "{fn_name}"')
+        if fn_name not in functions:
+            raise SyntaxError(f'Unknown function "{fn_name}"')
 
-    fn = functions[fn_name]
+        fn = functions[fn_name]
 
-    return fn(*args)
+        return fn(*args)
+
+    else:
+        # a static value (string, number, boolean, or null)
+        return lambda _: query
 
 
 built_in_functions = get_functions(compile)
