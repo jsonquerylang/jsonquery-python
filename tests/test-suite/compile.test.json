@@ -1,6 +1,6 @@
 {
   "source": "https://github.com/jsonquerylang/jsonquery/tree/main/test-suite/compile.test.json",
-  "updated": "2024-11-12T11:00:00Z",
+  "updated": "2024-11-17T11:00:00Z",
   "tests": [
     {
       "category": "value",
@@ -227,6 +227,13 @@
       "input": [-1, 0, 1, 2, 3],
       "query": ["filter", ["get"]],
       "output": [-1, 1, 2, 3]
+    },
+    {
+      "category": "filter",
+      "description": "should filter an array with strings",
+      "input": ["hello", "", "world", " "],
+      "query": ["filter", ["get"]],
+      "output": ["hello", "", "world", " "]
     },
 
     {

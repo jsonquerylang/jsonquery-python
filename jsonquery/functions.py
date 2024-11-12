@@ -67,7 +67,7 @@ def get_functions(compile):
     def fn_filter(predicate):
         _predicate = compile(predicate)
 
-        return lambda data: list(filter(_predicate, data))
+        return lambda data: list(filter(lambda item: truthy(_predicate(item)), data))
 
     def fn_map(callback):
         _callback = compile(callback)
@@ -154,9 +154,9 @@ def get_functions(compile):
         _value_if_false = compile(value_if_false)
 
         return (
-            lambda data: _value_if_false(data)
-            if _condition(data) in [False, 0, None]
-            else _value_if_true(data)
+            lambda data: _value_if_true(data)
+            if truthy(_condition(data))
+            else _value_if_false(data)
         )
 
     def fn_in(path, in_values):
@@ -265,3 +265,7 @@ def _parse_regex_flags(flags):
     return reduce(
         lambda combined, flag: combined | all_flags[flag], rest, all_flags[first]
     )
+
+
+def truthy(value):
+    return value not in [False, 0, None]
