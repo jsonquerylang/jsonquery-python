@@ -2,7 +2,6 @@ import json
 import re
 from typing import List, Optional, Union
 
-from jsonquery.functions import get_functions
 from jsonquery.types import (
     JsonQueryType,
     JsonQueryStringifyOptions,
@@ -34,8 +33,6 @@ built_in_operators = {
     "in": "in",
     "not in": "not in",
 }
-
-functions = get_functions(compile)
 
 
 def stringify(
