@@ -8,7 +8,25 @@ def compile(
     query: JsonQueryType, options: Optional[JsonQueryOptions] = None
 ) -> Callable[[JsonType], JsonType]:
     """
-    Compile a JSON Query
+    Compile a JSON Query.
+
+    Example:
+
+        from pprint import pprint
+        from "jsonquery" import compile
+
+        input = [
+            {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
+            {"name": "Joe", "age": 32, "scores": [6.1, 8.1]},
+            {"name": "Emily", "age": 19},
+        ]
+        query = ["sort", ["get", "age"], "desc"]
+        queryMe = compile(query)
+        output = queryMe(input)
+        pprint(output)
+        # [{'age': 32, 'name': 'Joe', 'scores': [6.1, 8.1]},
+        #  {'age': 23, 'name': 'Chris', 'scores': [7.2, 5, 8.0]},
+        #  {'age': 19, 'name': 'Emily'}]
 
     :param query: A JSON Query
     :param options: Can an object with custom functions

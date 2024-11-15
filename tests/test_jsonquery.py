@@ -20,6 +20,22 @@ class JSONQueryTestCase(unittest.TestCase):
             ],
         )
 
+    def test_jsonquery_str1(self):
+        """Test jsonquery parsing a query text"""
+        self.assertEqual(
+            jsonquery(data, "sort(.name)"),
+            [
+                {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
+                {"name": "Emily", "age": 19},
+                {"name": "Joe", "age": 32, "scores": [6.1, 8.1]},
+            ],
+        )
+
+    def test_jsonquery_str2(self):
+        """Test jsonquery parsing a query text with options"""
+        options = {"functions": {"times": lambda factor: lambda x: x * factor}}
+        self.assertEqual(jsonquery(4, "times(3)", options), 12)
+
     def test_options1(self):
         """Test defining a custom function"""
 

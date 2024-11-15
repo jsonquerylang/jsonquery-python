@@ -15,8 +15,34 @@ from jsonquery.types import JsonQueryParseOptions, JsonQueryType
 
 
 def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQueryType:
-    # FIXME: document the function
+    """
+    Parse a string containing a JSON Query into JSON.
 
+    Example:
+
+        from pprint import pprint
+        from "jsonquery" import parse
+
+        text_query = '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'
+        json_query = parse(text_query)
+        pprint(json_query)
+        # ['pipe',
+        #  ['get', 'friends'],
+        #  ['filter', ['eq', ['get', 'city'], 'New York']],
+        #  ['sort', ['get', 'age']],
+        #  ['pick', ['get', 'name'], ['get', 'age']]]
+
+    :param query: A query in text format
+    :param options: Can an object with custom operators and functions
+    :return: Returns the query in JSON format
+    """
+    jsonQuery = [
+        "pipe",
+        ["get", "friends"],
+        ["filter", ["eq", ["get", "city"], "New York"]],
+        ["sort", ["get", "age"]],
+        ["pick", ["get", "name"], ["get", "age"]],
+    ]
     custom_operators: Final = (options.get("operators") if options else None) or {}
     custom_functions: Final = (options.get("functions") if options else None) or {}
     all_functions: Final = {**functions, **custom_functions}

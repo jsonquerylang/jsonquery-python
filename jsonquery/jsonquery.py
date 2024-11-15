@@ -1,12 +1,30 @@
-from jsonquery.types import JsonType, JsonQueryType, JsonQueryOptions
 from jsonquery.compile import compile
+from jsonquery.parse import parse
+from jsonquery.types import JsonType, JsonQueryType, JsonQueryOptions
 
 
 def jsonquery(
-    data: JsonType, query: JsonQueryType, options: JsonQueryOptions | None = None
+    data: JsonType, query: JsonQueryType | str, options: JsonQueryOptions | None = None
 ) -> JsonType:
     """
-    Compile and evaluate a query
+    Compile and evaluate a JSON query.
+
+    Example:
+
+        from pprint import pprint
+        from "jsonquery" import jsonquery
+
+        input = [
+            {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
+            {"name": "Joe", "age": 32, "scores": [6.1, 8.1]},
+            {"name": "Emily", "age": 19},
+        ]
+        query = ["sort", ["get", "age"], "desc"]
+        output = jsonquery(query)
+        pprint(output)
+        # [{'age': 32, 'name': 'Joe', 'scores': [6.1, 8.1]},
+        #  {'age': 23, 'name': 'Chris', 'scores': [7.2, 5, 8.0]},
+        #  {'age': 19, 'name': 'Emily'}]
 
     :param data: The JSON document to be queried
     :param query: A JSON Query
@@ -14,6 +32,8 @@ def jsonquery(
     :return: Returns the result of the query applied to the data
     """
 
-    evaluate = compile(query, options)
+    _query = parse(query, options) if isinstance(query, str) else query
+
+    evaluate = compile(_query, options)
 
     return evaluate(data)

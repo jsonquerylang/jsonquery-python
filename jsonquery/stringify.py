@@ -17,7 +17,28 @@ DEFAULT_INDENTATION = "  "
 def stringify(
     query: JsonQueryType, options: Optional[JsonQueryStringifyOptions] = None
 ) -> str:
-    # FIXME: document the function
+    """
+    Stringify a JSON Query into a readable, human friendly text syntax.
+
+    Example:
+
+        from "jsonquery" import stringify
+
+        jsonQuery = [
+            "pipe",
+            ["get", "friends"],
+            ["filter", ["eq", ["get", "city"], "New York"]],
+            ["sort", ["get", "age"]],
+            ["pick", ["get", "name"], ["get", "age"]],
+        ]
+        textQuery = stringify(jsonQuery)
+        print(textQuery)
+        # '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'
+
+    :param query: A JSON Query
+    :param options: A dict with custom operators, max_line_length, and indentation
+    :return: Returns a human friendly string representation of the query
+    """
 
     space: Final = (
         options.get("indentation") if options else None

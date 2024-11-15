@@ -1,6 +1,8 @@
 from typing import TypeAlias, List, Mapping, TypedDict, Callable, NotRequired
 
-JsonType: TypeAlias = List["JsonValueType"] | Mapping[str, "JsonValueType"]
+JsonType: TypeAlias = (
+    List["JsonValueType"] | Mapping[str, "JsonValueType"] | "JsonValueType"
+)
 JsonValueType: TypeAlias = str | int | float | None | JsonType
 
 JsonPath = List[str | int]
