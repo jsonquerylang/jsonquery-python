@@ -1,7 +1,7 @@
 import json
-import re
 from typing import List, Optional, Union
 
+from jsonquery.constants import built_in_operators, unquoted_property_regex
 from jsonquery.types import (
     JsonQueryType,
     JsonQueryStringifyOptions,
@@ -13,31 +13,12 @@ from jsonquery.types import (
 DEFAULT_MAX_LINE_LENGTH = 40
 DEFAULT_INDENTATION = "  "
 
-unquoted_property_regex = re.compile(r"^[a-zA-Z_$][a-zA-Z0-9_$]*$")
-
-built_in_operators = {
-    "and": "and",
-    "or": "or",
-    "eq": "==",
-    "gt": ">",
-    "gte": ">=",
-    "lt": "<",
-    "lte": "<=",
-    "ne": "!=",
-    "add": "+",
-    "subtract": "-",
-    "multiply": "*",
-    "divide": "/",
-    "pow": "^",
-    "mod": "%",
-    "in": "in",
-    "not in": "not in",
-}
-
 
 def stringify(
     query: JsonQueryType, options: Optional[JsonQueryStringifyOptions] = None
 ) -> str:
+    # FIXME: document the function
+
     space = (options.get("indentation") if options else None) or DEFAULT_INDENTATION
     max_line_length = (
         options.get("max_line_length") if options else None

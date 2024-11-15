@@ -1,7 +1,6 @@
 import unittest
 import json
 from os import path
-from typing import TypedDict
 
 from jsonquery import stringify
 from jsonquery.types import JsonQueryStringifyOptions

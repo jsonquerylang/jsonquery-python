@@ -19,3 +19,8 @@ class JsonQueryStringifyOptions(TypedDict):
     operators: NotRequired[Mapping[str, str]]
     max_line_length: NotRequired[int]
     indentation: NotRequired[str]
+
+
+class JsonQueryParseOptions(TypedDict):
+    functions: NotRequired[Mapping[str, bool] | Mapping[str, Callable]]
+    operators: NotRequired[Mapping[str, str]]
