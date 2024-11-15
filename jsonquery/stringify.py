@@ -1,7 +1,7 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Final
 
-from jsonquery.constants import built_in_operators, unquoted_property_regex
+from jsonquery.constants import operators, unquoted_property_regex
 from jsonquery.types import (
     JsonQueryType,
     JsonQueryStringifyOptions,
@@ -19,11 +19,14 @@ def stringify(
 ) -> str:
     # FIXME: document the function
 
-    space = (options.get("indentation") if options else None) or DEFAULT_INDENTATION
-    max_line_length = (
+    space: Final = (
+        options.get("indentation") if options else None
+    ) or DEFAULT_INDENTATION
+    max_line_length: Final = (
         options.get("max_line_length") if options else None
     ) or DEFAULT_MAX_LINE_LENGTH
-    operators = options.get("operators", built_in_operators) if options else None
+    custom_operators: Final = (options.get("operators") if options else None) or {}
+    all_operators: Final = {**operators, **custom_operators}
 
     def _stringify(_query: JsonQueryType, indent: str) -> str:
         if isinstance(_query, list):
@@ -52,9 +55,7 @@ def stringify(
                 [f"[\n{indent + space}", f",\n{indent + space}", f"\n{indent}]"],
             )
 
-        op = (operators.get(name) if operators else None) or built_in_operators.get(
-            name
-        )
+        op = all_operators.get(name)
         if op is not None and len(args) == 2:
             left, right = args
             left_str = _stringify(left, indent)

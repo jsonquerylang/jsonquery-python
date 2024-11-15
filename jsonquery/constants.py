@@ -1,6 +1,6 @@
 import re
 
-built_in_operators = {
+operators = {
     "and": "and",
     "or": "or",
     "eq": "==",

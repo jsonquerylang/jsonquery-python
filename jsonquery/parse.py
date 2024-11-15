@@ -1,6 +1,7 @@
 import json
 from typing import Optional, Callable, Pattern, Final
 
+from jsonquery.compile import functions
 from jsonquery.constants import (
     starts_with_whitespace_regex,
     starts_with_keyword_regex,
@@ -8,25 +9,18 @@ from jsonquery.constants import (
     starts_with_number_regex,
     starts_with_unquoted_property_regex,
     starts_with_string_regex,
-    built_in_operators,
+    operators,
 )
-from jsonquery.functions import get_functions
 from jsonquery.types import JsonQueryParseOptions, JsonQueryType
-
-built_in_functions: Final = get_functions(compile)
 
 
 def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQueryType:
     # FIXME: document the function
 
-    all_functions: Final = {
-        **built_in_functions,
-        **(options.get("functions", {}) if options else {}),
-    }
-    all_operators: Final = {
-        **built_in_operators,
-        **(options.get("operators", {}) if options else {}),
-    }
+    custom_operators: Final = (options.get("operators") if options else None) or {}
+    custom_functions: Final = (options.get("functions") if options else None) or {}
+    all_functions: Final = {**functions, **custom_functions}
+    all_operators: Final = {**operators, **custom_operators}
     sorted_operator_names: Final = sorted(
         all_operators.keys(), key=lambda name: len(name), reverse=True
     )

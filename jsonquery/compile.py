@@ -1,6 +1,7 @@
-from jsonquery.types import JsonQueryType, JsonType, JsonQueryOptions
-from typing import Callable, Optional
+from typing import Callable, Optional, Final
+
 from jsonquery.functions import get_functions
+from jsonquery.types import JsonQueryType, JsonType, JsonQueryOptions
 
 
 def compile(
@@ -14,20 +15,17 @@ def compile(
     :return: Returns a function which can execute the query
     """
 
+    custom_functions: Final = (options.get("functions") if options else None) or {}
+    all_functions: Final = {**functions, **custom_functions}
+
     if isinstance(query, list):
         # a function like ["sort", ["get", "name"], "desc"]
         fn_name, *args = query
 
-        functions = (
-            {**built_in_functions, **options["functions"]}
-            if (options is not None) and ("functions" in options)
-            else built_in_functions
-        )
-
-        if fn_name not in functions:
+        if fn_name not in all_functions:
             raise SyntaxError(f'Unknown function "{fn_name}"')
 
-        fn = functions[fn_name]
+        fn = all_functions[fn_name]
 
         return fn(*args)
 
@@ -36,4 +34,4 @@ def compile(
         return lambda _: query
 
 
-built_in_functions = get_functions(compile)
+functions = get_functions(compile)
