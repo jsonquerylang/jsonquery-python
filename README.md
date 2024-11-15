@@ -35,6 +35,10 @@ pprint(execute([32, 19, 23])) # [19, 23, 32]
 pprint(execute([5, 2, 7, 4])) # [2, 4, 5, 7]
 ```
 
+### Syntax
+
+The JSON Query syntax is described on the following page: https://github.com/jsonquerylang/jsonquery?tab=readme-ov-file#syntax.
+
 ## API
 
 ### jsonquery
