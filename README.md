@@ -15,24 +15,47 @@ The library is not yet published and requires a manual build.
 ## Use
 
 ```python
-from jsonquery import jsonquery, compile
+from jsonquery import jsonquery
 from pprint import pprint
 
-data = [
-    {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
-    {"name": "Joe", "age": 32, "scores": [6.1, 8.1]},
-    {"name": "Emily", "age": 19},
-]
+data = {
+    "friends": [
+        { "name": "Chris", "age": 23, "city": "New York" },
+        { "name": "Emily", "age": 19, "city": "Atlanta" },
+        { "name": "Joe", "age": 32, "city": "New York" },
+        { "name": "Kevin", "age": 19, "city": "Atlanta" },
+        { "name": "Michelle", "age": 27, "city": "Los Angeles" },
+        { "name": "Robert", "age": 45, "city": "Manhattan" },
+        { "name": "Sarah", "age": 31, "city": "New York" }
+    ]
+}
 
-pprint(jsonquery(data, ["sort", ["get", "age"], "desc"]))
-# [{'age': 32, 'name': 'Joe', 'scores': [6.1, 8.1]},
-#  {'age': 23, 'name': 'Chris', 'scores': [7.2, 5, 8.0]},
-#  {'age': 19, 'name': 'Emily'}]
+# Get the array containing the friends from the object, filter the friends that live in New York,
+# sort them by age, and pick just the name and age out of the objects.
+output = jsonquery(data, """
+    .friends 
+        | filter(.city == "New York") 
+        | sort(.age) 
+        | pick(.name, .age)
+""")
+pprint(output)
+# [{'age': 23, 'name': 'Chris'},
+#  {'age': 31, 'name': 'Sarah'},
+#  {'age': 32, 'name': 'Joe'}]
 
-# use the function `compile` to compile once and execute repeatedly on different JSON documents
-execute = compile(["sort"])
-pprint(execute([32, 19, 23])) # [19, 23, 32]
-pprint(execute([5, 2, 7, 4])) # [2, 4, 5, 7]
+# The same query can be written using the JSON format instead of the text format.
+# Note that the functions `parse` and `stringify` can be used
+# to convert from text format to JSON format and vice versa.
+pprint(jsonquery(data, [
+    "pipe",
+    ["get", "friends"],
+    ["filter", ["eq", ["get", "city"], "New York"]],
+    ["sort", ["get", "age"]],
+    ["pick", ["get", "name"], ["get", "age"]]
+]))
+# [{'age': 23, 'name': 'Chris'},
+#  {'age': 31, 'name': 'Sarah'},
+#  {'age': 32, 'name': 'Joe'}]
 ```
 
 ### Syntax
@@ -62,7 +85,7 @@ Example:
 
 ```python
 from pprint import pprint
-from "jsonquery" import jsonquery
+from jsonquery import jsonquery
 
 input = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
@@ -79,7 +102,7 @@ pprint(output)
 
 ### compile
 
-Compile a JSON Query. Returns a function which can execute the query.
+Compile a JSON Query. Returns a function which can execute the query repeatedly for different inputs.
 
 Syntax:
 
@@ -99,7 +122,7 @@ Example:
 
 ```python
 from pprint import pprint
-from "jsonquery" import compile
+from jsonquery import compile
 
 input = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
@@ -136,7 +159,7 @@ Example:
 
 ```python
 from pprint import pprint
-from "jsonquery" import parse
+from jsonquery import parse
 
 text_query = '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'
 json_query = parse(text_query)
@@ -169,7 +192,7 @@ Where:
 Example:
 
 ```python
-from "jsonquery" import stringify
+from jsonquery import stringify
 
 jsonQuery = [
     "pipe",
