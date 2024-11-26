@@ -8,9 +8,9 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="jsonquery",
-    version="0.0.1",
-    packages=find_packages(include=["jsonquery"]),
+    name="jsonquerylang",
+    version="1.0.0",
+    packages=find_packages(include=["jsonquerylang"]),
     description="A lightweight, flexible, and expandable JSON query language",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -32,5 +32,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     include_package_data=True,
-    install_requires=["numpy"],
+    install_requires=[],
 )
