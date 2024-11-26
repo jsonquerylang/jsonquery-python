@@ -5,7 +5,7 @@ from os import path
 # Get the long description from the README file
 HERE = path.abspath(path.dirname(__file__))
 with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
-    long_description = f.read()
+    long_description = f.read().replace("\r", "")
 
 setup(
     name="jsonquerylang",
