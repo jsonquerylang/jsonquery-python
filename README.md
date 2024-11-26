@@ -10,10 +10,10 @@ Try it out on the online playground: <https://jsonquerylang.org>
 
 ## Install
 
-Install via [PyPi](https://pypi.org): https://pypi.org/project/jsonquerylang/
+Install via PyPi: https://pypi.org/project/jsonquerylang/
 
 ```
-$ pip install jsonquerylang
+pip install jsonquerylang
 ```
 
 ## Use
@@ -97,7 +97,7 @@ input = [
     {"name": "Emily", "age": 19},
 ]
 query = ["sort", ["get", "age"], "desc"]
-output = jsonquery(query)
+output = jsonquery(input, query)
 pprint(output)
 # [{'age': 32, 'name': 'Joe', 'scores': [6.1, 8.1]},
 #  {'age': 23, 'name': 'Chris', 'scores': [7.2, 5, 8.0]},
