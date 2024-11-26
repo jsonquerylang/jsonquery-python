@@ -1,5 +1,5 @@
 from pprint import pprint
-from jsonquery import parse, stringify
+from jsonquerylang import parse, stringify
 
 # parse the human friendly text format into the corresponding JSON format
 text_query = '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'

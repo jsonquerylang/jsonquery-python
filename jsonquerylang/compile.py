@@ -1,7 +1,7 @@
 from typing import Callable, Optional, Final
 
-from jsonquery.functions import get_functions
-from jsonquery.types import JsonQueryType, JsonType, JsonQueryOptions
+from jsonquerylang.functions import get_functions
+from jsonquerylang.types import JsonQueryType, JsonType, JsonQueryOptions
 
 
 def compile(
@@ -13,7 +13,7 @@ def compile(
     Example:
 
         from pprint import pprint
-        from "jsonquery" import compile
+        from jsonquerylang import compile
 
         input = [
             {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},

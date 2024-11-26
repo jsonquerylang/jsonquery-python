@@ -1,4 +1,4 @@
-from jsonquery import jsonquery, JsonQueryOptions
+from jsonquerylang import jsonquery, JsonQueryOptions
 
 
 def times(value):

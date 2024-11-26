@@ -1,8 +1,8 @@
 import json
 from typing import List, Optional, Union, Final
 
-from jsonquery.constants import operators, unquoted_property_regex
-from jsonquery.types import (
+from jsonquerylang.constants import operators, unquoted_property_regex
+from jsonquerylang.types import (
     JsonQueryType,
     JsonQueryStringifyOptions,
     JsonQueryObjectType,
@@ -22,7 +22,7 @@ def stringify(
 
     Example:
 
-        from "jsonquery" import stringify
+        from jsonquerylang import stringify
 
         jsonQuery = [
             "pipe",

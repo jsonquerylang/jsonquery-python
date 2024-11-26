@@ -1,6 +1,6 @@
-from jsonquery.compile import compile
-from jsonquery.parse import parse
-from jsonquery.types import JsonType, JsonQueryType, JsonQueryOptions
+from jsonquerylang.compile import compile
+from jsonquerylang.parse import parse
+from jsonquerylang.types import JsonType, JsonQueryType, JsonQueryOptions
 
 
 def jsonquery(
@@ -12,7 +12,7 @@ def jsonquery(
     Example:
 
         from pprint import pprint
-        from "jsonquery" import jsonquery
+        from jsonquerylang import jsonquery
 
         input = [
             {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},

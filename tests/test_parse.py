@@ -3,7 +3,7 @@ import json
 import re
 from os import path
 
-from jsonquery import parse
+from jsonquerylang import parse
 
 
 class ParseTestCase(unittest.TestCase):

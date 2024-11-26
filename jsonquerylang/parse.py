@@ -1,8 +1,8 @@
 import json
 from typing import Optional, Callable, Pattern, Final
 
-from jsonquery.compile import functions
-from jsonquery.constants import (
+from jsonquerylang.compile import functions
+from jsonquerylang.constants import (
     starts_with_whitespace_regex,
     starts_with_keyword_regex,
     starts_with_int_regex,
@@ -11,7 +11,7 @@ from jsonquery.constants import (
     starts_with_string_regex,
     operators,
 )
-from jsonquery.types import JsonQueryParseOptions, JsonQueryType
+from jsonquerylang.types import JsonQueryParseOptions, JsonQueryType
 
 
 def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQueryType:
@@ -21,7 +21,7 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
     Example:
 
         from pprint import pprint
-        from "jsonquery" import parse
+        from jsonquerylang import parse
 
         text_query = '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'
         json_query = parse(text_query)

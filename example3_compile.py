@@ -1,4 +1,4 @@
-from jsonquery import compile
+from jsonquerylang import compile
 
 # use the function `compile` to compile once and execute repeatedly
 query = ["sort"]

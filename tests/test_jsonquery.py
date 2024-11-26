@@ -1,5 +1,5 @@
 import unittest
-from jsonquery import jsonquery
+from jsonquerylang import jsonquery
 
 data = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},

@@ -10,23 +10,27 @@ Try it out on the online playground: <https://jsonquerylang.org>
 
 ## Install
 
-The library is not yet published and requires a manual build. 
+Install via [PyPi](https://pypi.org): https://pypi.org/project/jsonquerylang/
+
+```
+$ pip install jsonquerylang
+```
 
 ## Use
 
 ```python
-from jsonquery import jsonquery
+from jsonquerylang import jsonquery
 from pprint import pprint
 
 data = {
     "friends": [
-        { "name": "Chris", "age": 23, "city": "New York" },
-        { "name": "Emily", "age": 19, "city": "Atlanta" },
-        { "name": "Joe", "age": 32, "city": "New York" },
-        { "name": "Kevin", "age": 19, "city": "Atlanta" },
-        { "name": "Michelle", "age": 27, "city": "Los Angeles" },
-        { "name": "Robert", "age": 45, "city": "Manhattan" },
-        { "name": "Sarah", "age": 31, "city": "New York" }
+        {"name": "Chris", "age": 23, "city": "New York"},
+        {"name": "Emily", "age": 19, "city": "Atlanta"},
+        {"name": "Joe", "age": 32, "city": "New York"},
+        {"name": "Kevin", "age": 19, "city": "Atlanta"},
+        {"name": "Michelle", "age": 27, "city": "Los Angeles"},
+        {"name": "Robert", "age": 45, "city": "Manhattan"},
+        {"name": "Sarah", "age": 31, "city": "New York"}
     ]
 }
 
@@ -85,7 +89,7 @@ Example:
 
 ```python
 from pprint import pprint
-from jsonquery import jsonquery
+from jsonquerylang import jsonquery
 
 input = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
@@ -122,7 +126,7 @@ Example:
 
 ```python
 from pprint import pprint
-from jsonquery import compile
+from jsonquerylang import compile
 
 input = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
@@ -159,7 +163,7 @@ Example:
 
 ```python
 from pprint import pprint
-from jsonquery import parse
+from jsonquerylang import parse
 
 text_query = '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'
 json_query = parse(text_query)
@@ -192,7 +196,7 @@ Where:
 Example:
 
 ```python
-from jsonquery import stringify
+from jsonquerylang import stringify
 
 jsonQuery = [
     "pipe",

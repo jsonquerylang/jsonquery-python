@@ -1,7 +1,7 @@
 import unittest
 import json
 from os import path
-from jsonquery import compile
+from jsonquerylang import compile
 
 friends = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},

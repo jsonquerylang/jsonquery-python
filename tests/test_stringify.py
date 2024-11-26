@@ -2,8 +2,8 @@ import unittest
 import json
 from os import path
 
-from jsonquery import stringify
-from jsonquery.types import JsonQueryStringifyOptions
+from jsonquerylang import stringify
+from jsonquerylang.types import JsonQueryStringifyOptions
 
 
 class StringifyTestCase(unittest.TestCase):
