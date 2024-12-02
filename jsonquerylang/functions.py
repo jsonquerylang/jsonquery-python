@@ -143,8 +143,10 @@ def get_functions(compile):
 
     fn_flatten = lambda: lambda data: [x for xs in data for x in xs]
     fn_join = lambda separator="": lambda data: separator.join(data)
-    fn_split = lambda separator=None: lambda data: (
-        data.split(separator) if separator is not "" else split_chars(data)
+    fn_split = build_function(
+        lambda text, separator=None: (
+            text.split(separator) if separator is not "" else split_chars(text)
+        )
     )
     fn_substring = lambda start, end=None: lambda data: data[max(start, 0) : end]
     fn_uniq = lambda: lambda data: list(dict.fromkeys(data))
