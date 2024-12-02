@@ -32,7 +32,7 @@ def jsonquery(
     :return: Returns the result of the query applied to the data
     """
 
-    _query = parse(query, options) if isinstance(query, str) else query
+    _query = parse(query, options) if type(query) is str else query
 
     evaluate = compile(_query, options)
 

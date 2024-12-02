@@ -36,7 +36,7 @@ def compile(
     custom_functions: Final = (options.get("functions") if options else None) or {}
     all_functions: Final = {**functions, **custom_functions}
 
-    if isinstance(query, list):
+    if type(query) is list:
         # a function like ["sort", ["get", "name"], "desc"]
         fn_name, *args = query
 
