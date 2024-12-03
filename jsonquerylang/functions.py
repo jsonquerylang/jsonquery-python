@@ -157,9 +157,21 @@ def get_functions(compile):
     fn_size = lambda: lambda data: len(data)
     fn_keys = lambda: lambda data: list(data.keys())
     fn_values = lambda: lambda data: list(data.values())
-    fn_prod = lambda: lambda data: prod(data)
-    fn_sum = lambda: lambda data: sum(data)
-    fn_average = lambda: lambda data: sum(data) / len(data)
+    fn_prod = (
+        lambda: lambda data: prod(data)
+        if not empty(data)
+        else raise_runtime_error("Cannot calculate the prod of an empty list")
+    )
+    fn_sum = (
+        lambda: lambda data: sum(data)
+        if not empty(data)
+        else raise_runtime_error("Cannot calculate the sum of an empty list")
+    )
+    fn_average = (
+        lambda: lambda data: sum(data) / len(data)
+        if not empty(data)
+        else raise_runtime_error("Cannot calculate the average of an empty list")
+    )
     fn_min = lambda: lambda data: min(data)
     fn_max = lambda: lambda data: max(data)
 
@@ -342,3 +354,11 @@ def to_number(value):
 def split_chars(text):
     (*chars,) = text
     return chars
+
+
+def empty(array):
+    return len(array) == 0
+
+
+def raise_runtime_error(message: str):
+    raise RuntimeError(message)

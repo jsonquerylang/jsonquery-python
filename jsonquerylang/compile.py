@@ -1,5 +1,5 @@
+import json
 from typing import Callable, Optional, Final
-
 from jsonquerylang.functions import get_functions
 from jsonquerylang.types import JsonQueryType, JsonType, JsonQueryOptions
 
@@ -46,6 +46,11 @@ def compile(
         fn = all_functions[fn_name]
 
         return fn(*args)
+
+    if type(query) is dict:
+        raise SyntaxError(
+            f'Function notation ["object", {{...}}] expected but got {json.dumps(query)}'
+        )
 
     else:
         # a static value (string, number, boolean, or null)
