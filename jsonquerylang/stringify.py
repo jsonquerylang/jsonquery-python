@@ -50,7 +50,7 @@ def stringify(
     all_operators: Final = {**operators, **custom_operators}
 
     def _stringify(_query: JsonQueryType, indent: str) -> str:
-        if isinstance(_query, list):
+        if type(_query) is list:
             return stringify_function(_query, indent)
         else:
             return json.dumps(_query)  # value (string, number, boolean, null)
