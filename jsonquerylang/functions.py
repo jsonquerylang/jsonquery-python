@@ -148,7 +148,7 @@ def get_functions(compile):
             text.split(separator) if separator is not "" else split_chars(text)
         )
     )
-    fn_substring = lambda start, end=None: lambda data: data[max(start, 0) : end]
+    fn_substring = build_function(lambda text, start, end=None: text[max(start, 0) : end])
     fn_uniq = lambda: lambda data: list(dict.fromkeys(data))
     fn_uniq_by = lambda path: lambda data: list(fn_key_by(path)(data).values())
     fn_limit = lambda count: lambda data: data[0:count] if count >= 0 else []
