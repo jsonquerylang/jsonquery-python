@@ -32,8 +32,33 @@ ruff format
 
 ## Publish
 
-```
-python -m build
-twine check dist/*
-twine upload dist/*
-```
+1.  Format the code:
+
+    ```
+    ruff format
+    ```
+
+2.  Update the version number in `setup.py` using semantic versioning.
+
+3.  Run the unit tests and check whether all tests pass:
+
+    ```
+    python -m unittest
+    ```
+
+4.  Commit and push the changes to GitHub.
+
+5.  Add a version tag:
+
+    ```
+    git tag v1.2.3
+    git push --tag
+    ```
+
+6.  Publish on PyPi:
+
+    ```
+    python -m build
+    twine check dist/*
+    twine upload dist/*
+    ```
