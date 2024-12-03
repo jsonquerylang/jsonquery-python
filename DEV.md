@@ -55,10 +55,17 @@ ruff format
     git push --tag
     ```
 
-6.  Publish on PyPi:
+6.  Clear the `dist` folder
 
+7.  Build the library:
+ 
     ```
     python -m build
+    ```
+
+8.  Publish on PyPi:
+
+    ```
     twine check dist/*
     twine upload dist/*
     ```
