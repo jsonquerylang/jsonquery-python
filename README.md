@@ -157,7 +157,7 @@ Where:
 - `textQuery`: A query in text format
 - `options`: An optional object which can have the following properties:
   - `functions` an object with custom functions
-  - `operators` an object with the names of custom operators both as key and value
+  - `operators` a list with custom operators
 
 Example:
 
@@ -189,7 +189,7 @@ Where:
 
 - `query` is a JSON Query
 - `options` is an optional object that can have the following properties:
-  - `operators` an object with the names of custom operators both as key and value
+  - `operators` a list with custom operators
   - `indentation` a string containing the desired indentation, defaults to two spaces: `"  "`
   - `max_line_length` a number with the maximum line length, used for wrapping contents. Default value: `40`.
 

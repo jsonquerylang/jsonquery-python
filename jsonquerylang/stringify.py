@@ -1,7 +1,9 @@
 import json
+from functools import reduce
 from typing import List, Optional, Union, Final
 
-from jsonquerylang.constants import operators, unquoted_property_regex
+from jsonquerylang.regexps import unquoted_property_regex
+from jsonquerylang.operators import operators, extend_operators
 from jsonquerylang.types import (
     JsonQueryType,
     JsonQueryStringifyOptions,
@@ -9,6 +11,7 @@ from jsonquerylang.types import (
     JsonPath,
     JsonQueryFunctionType,
 )
+from jsonquerylang.utils import find_index, merge
 
 DEFAULT_MAX_LINE_LENGTH = 40
 DEFAULT_INDENTATION = "  "
@@ -46,16 +49,23 @@ def stringify(
     max_line_length: Final = (
         options.get("max_line_length") if options else None
     ) or DEFAULT_MAX_LINE_LENGTH
-    custom_operators: Final = (options.get("operators") if options else None) or {}
-    all_operators: Final = {**operators, **custom_operators}
+    custom_operators: Final = (options.get("operators") if options else None) or None
+    all_operators: Final = (
+        extend_operators(operators, custom_operators) if custom_operators else operators
+    )
+    all_operators_map: Final = reduce(merge, all_operators)
 
-    def _stringify(_query: JsonQueryType, indent: str) -> str:
+    def _stringify(
+        _query: JsonQueryType, indent: str, parent_precedence=len(all_operators) - 1
+    ) -> str:
         if type(_query) is list:
-            return stringify_function(_query, indent)
+            return stringify_function(_query, indent, parent_precedence)
         else:
             return json.dumps(_query)  # value (string, number, boolean, null)
 
-    def stringify_function(query_fn: JsonQueryFunctionType, indent: str) -> str:
+    def stringify_function(
+        query_fn: JsonQueryFunctionType, indent: str, parent_precedence: int
+    ) -> str:
         name, *args = query_fn
 
         if name == "get" and len(args) > 0:
@@ -76,31 +86,33 @@ def stringify(
                 [f"[\n{indent + space}", f",\n{indent + space}", f"\n{indent}]"],
             )
 
-        op = all_operators.get(name)
+        op = all_operators_map.get(name)
         if op is not None and len(args) == 2:
+            precedence = find_index(lambda group: name in group, all_operators)
             left, right = args
-            left_str = _stringify(left, indent)
-            right_str = _stringify(right, indent)
-            return f"({left_str} {op} {right_str})"
+            left_str = _stringify(left, indent, precedence)
+            right_str = _stringify(right, indent, precedence)
+
+            return (
+                f"({left_str} {op} {right_str})"
+                if parent_precedence < precedence
+                else f"{left_str} {op} {right_str}"
+            )
 
         child_indent = indent if len(args) == 1 else indent + space
         args_str = stringify_args(args, child_indent)
-        return (
-            f"{name}{args_str[0]}"
-            if len(args) == 1 and args_str[0][0] == "("
-            else join(
-                args_str,
-                [f"{name}(", ", ", ")"],
-                (
-                    [f"{name}(", f",\n{indent}", ")"]
-                    if len(args) == 1
-                    else [
-                        f"{name}(\n{child_indent}",
-                        f",\n{child_indent}",
-                        f"\n{indent})",
-                    ]
-                ),
-            )
+        return join(
+            args_str,
+            [f"{name}(", ", ", ")"],
+            (
+                [f"{name}(", f",\n{indent}", ")"]
+                if len(args) == 1
+                else [
+                    f"{name}(\n{child_indent}",
+                    f",\n{child_indent}",
+                    f"\n{indent})",
+                ]
+            ),
         )
 
     def stringify_object(query_obj: JsonQueryObjectType, indent: str) -> str:

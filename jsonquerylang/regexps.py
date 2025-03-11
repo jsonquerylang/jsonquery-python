@@ -1,24 +1,5 @@
 import re
 
-operators = {
-    "and": "and",
-    "or": "or",
-    "eq": "==",
-    "gt": ">",
-    "gte": ">=",
-    "lt": "<",
-    "lte": "<=",
-    "ne": "!=",
-    "add": "+",
-    "subtract": "-",
-    "multiply": "*",
-    "divide": "/",
-    "pow": "^",
-    "mod": "%",
-    "in": "in",
-    "not in": "not in",
-}
-
 unquoted_property_regex = re.compile(r"^[a-zA-Z_$][a-zA-Z\d_$]*$")
 starts_with_unquoted_property_regex = re.compile(r"^[a-zA-Z_$][a-zA-Z\d_$]*")
 starts_with_string_regex = re.compile(

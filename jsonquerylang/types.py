@@ -13,16 +13,42 @@ JsonQueryFunctionType: TypeAlias = list[str | JsonType]
 JsonQueryObjectType: TypeAlias = Mapping[str, JsonQueryType]
 
 
+OperatorGroup: TypeAlias = Mapping[str, str]
+
+
+class CustomOperatorAt(TypedDict):
+    name: str
+    op: str
+    at: str
+
+
+class CustomOperatorBefore(TypedDict):
+    name: str
+    op: str
+    before: str
+
+
+class CustomOperatorAfter(TypedDict):
+    name: str
+    op: str
+    after: str
+
+
+CustomOperator: TypeAlias = (
+    CustomOperatorAt | CustomOperatorBefore | CustomOperatorAfter
+)
+
+
 class JsonQueryOptions(TypedDict):
     functions: NotRequired[Mapping[str, Callable]]
 
 
 class JsonQueryStringifyOptions(TypedDict):
-    operators: NotRequired[Mapping[str, str]]
+    operators: NotRequired[list[CustomOperator]]
     max_line_length: NotRequired[int]
     indentation: NotRequired[str]
 
 
 class JsonQueryParseOptions(TypedDict):
     functions: NotRequired[Mapping[str, bool] | Mapping[str, Callable]]
-    operators: NotRequired[Mapping[str, str]]
+    operators: NotRequired[list[CustomOperator]]
