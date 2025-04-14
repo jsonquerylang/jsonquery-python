@@ -20,18 +20,24 @@ class CustomOperatorAt(TypedDict):
     name: str
     op: str
     at: str
+    vararg: NotRequired[bool]
+    left_associative: NotRequired[bool]
 
 
 class CustomOperatorBefore(TypedDict):
     name: str
     op: str
     before: str
+    vararg: NotRequired[bool]
+    left_associative: NotRequired[bool]
 
 
 class CustomOperatorAfter(TypedDict):
     name: str
     op: str
     after: str
+    vararg: NotRequired[bool]
+    left_associative: NotRequired[bool]
 
 
 CustomOperator: TypeAlias = (

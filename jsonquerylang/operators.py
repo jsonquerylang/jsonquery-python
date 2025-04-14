@@ -11,7 +11,12 @@ operators: list[OperatorGroup] = [
     {"eq": "==", "ne": "!="},
     {"and": "and"},
     {"or": "or"},
+    {"pipe": "|"},
 ]
+
+vararg_operators = ["|", "and", "or"]
+
+left_associative_operators = ["|", "and", "or", "*", "/", "%", "+", "-"]
 
 
 def extend_operators(
