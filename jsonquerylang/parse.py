@@ -2,7 +2,8 @@ import json
 from functools import reduce
 from typing import Optional, Callable, Pattern, Final
 
-from jsonquerylang.compile import functions
+from jsonquerylang.compile import compile, build_function
+from jsonquerylang.functions import get_functions
 from jsonquerylang.regexps import (
     starts_with_whitespace_regex,
     starts_with_keyword_regex,
@@ -44,18 +45,22 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
     :return: Returns the query in JSON format
     """
 
-    custom_functions: Final = (options.get("functions") if options else None) or {}
-    custom_operators: Final = (options.get("operators") if options else None) or []
+    functions = get_functions(lambda q: compile(q, options), build_function)
+    custom_functions: Final = options.get("functions", {}) if options else {}
+    custom_operators: Final = options.get("operators", []) if options else []
 
     all_functions: Final = merge(functions, custom_functions)
     all_operators: Final = extend_operators(operators, custom_operators)
     all_operators_map: Final = reduce(merge, all_operators)
     all_vararg_operators: Final = vararg_operators + list(
-        map(lambda op: op.op, filter(lambda op: op.get("vararg"), custom_operators))
+        map(
+            lambda op: op.get("op"),
+            filter(lambda op: op.get("vararg"), custom_operators),
+        )
     )
     all_left_associative_operators: Final = left_associative_operators + list(
         map(
-            lambda op: op.op,
+            lambda op: op.get("op"),
             filter(lambda op: op.get("left_associative"), custom_operators),
         )
     )

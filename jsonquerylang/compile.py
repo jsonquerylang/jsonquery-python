@@ -33,6 +33,8 @@ def compile(
     :return: Returns a function which can execute the query
     """
 
+    functions = get_functions(lambda q: compile(q, options), build_function)
+
     custom_functions: Final = (options.get("functions") if options else None) or {}
     all_functions: Final = {**functions, **custom_functions}
 
@@ -56,5 +58,12 @@ def compile(
         # a static value (string, number, boolean, or null)
         return lambda _: query
 
+def build_function(fn):
+    def evaluate_fn(*args):
+        compiled_args = list(map(compile, args))
 
-functions = get_functions(compile)
+        return lambda data: fn(
+            *list(map(lambda compiled_arg: compiled_arg(data), compiled_args))
+        )
+
+    return evaluate_fn

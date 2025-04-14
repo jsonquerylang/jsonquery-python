@@ -47,6 +47,7 @@ CustomOperator: TypeAlias = (
 
 class JsonQueryOptions(TypedDict):
     functions: NotRequired[Mapping[str, Callable]]
+    operators: NotRequired[list[CustomOperator]]
 
 
 class JsonQueryStringifyOptions(TypedDict):

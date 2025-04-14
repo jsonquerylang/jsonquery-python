@@ -20,19 +20,23 @@ left_associative_operators = ["|", "and", "or", "*", "/", "%", "+", "-"]
 
 
 def extend_operators(
-    all_operators: list[OperatorGroup], new_operators: list[CustomOperator]
+    all_operators: list[OperatorGroup], custom_operators: list[CustomOperator]
 ) -> list[OperatorGroup]:
-    return reduce(extend_operator, new_operators, all_operators)
+    # backward compatibility error with v4 where `operators` was an object
+    if type(custom_operators) is not list:
+        raise RuntimeError("Invalid custom operators")
+
+    return reduce(extend_operator, custom_operators, all_operators)
 
 
 def extend_operator(
     all_operators: list[OperatorGroup], custom_operator: CustomOperator
 ) -> list[OperatorGroup]:
-    name = custom_operator["name"]
-    op = custom_operator["op"]
-    at = custom_operator["at"] if "at" in custom_operator else None
-    after = custom_operator["after"] if "after" in custom_operator else None
-    before = custom_operator["before"] if "before" in custom_operator else None
+    name = custom_operator.get("name")
+    op = custom_operator.get("op")
+    at = custom_operator.get("at")
+    after = custom_operator.get("after")
+    before = custom_operator.get("before")
 
     if at:
         callback = lambda group: {**group, name: op} if at in group.values() else group
