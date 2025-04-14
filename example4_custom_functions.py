@@ -10,3 +10,4 @@ query = ["times", 2]
 options: JsonQueryOptions = {"functions": {"times": times}}
 
 print(jsonquery(data, query, options))
+# [4, 6, 16]
