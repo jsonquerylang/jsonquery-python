@@ -24,7 +24,7 @@ class StringifyTestCase(unittest.TestCase):
                 )
 
                 for test in group["tests"]:
-                    message = f"[{group["category"]}] {group["description"]} (input: {test["input"]})"
+                    message = f"[{group['category']}] {group['description']} (input: {test['input']})"
                     with self.subTest(message=message):
                         self.assertEqual(
                             stringify(test["input"], options), test["output"]

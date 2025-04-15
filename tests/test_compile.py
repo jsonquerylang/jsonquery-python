@@ -42,6 +42,7 @@ class CompileTestCase(unittest.TestCase):
 
     def test_options2(self):
         """should extend with a custom function with more than 2 arguments"""
+
         def one_of(value, a, b, c):
             return value == a or value == b or value == c
 
@@ -58,6 +59,7 @@ class CompileTestCase(unittest.TestCase):
 
     def test_options4(self):
         """should be able to insert a function in a nested compile"""
+
         def times(value):
             _options = {"functions": {"foo": lambda: lambda _data: 42}}
             _value = compile(value, _options)
@@ -89,6 +91,7 @@ class CompileTestCase(unittest.TestCase):
 
     def test_options7(self):
         """should extend with a custom function aboutEq"""
+
         def about_eq(a, b):
             epsilon = 0.001
             return abs(a - b) < epsilon
@@ -184,7 +187,7 @@ class CompileTestCase(unittest.TestCase):
             suite = json.load(read_file)
 
             for test in suite["tests"]:
-                message = f"[{test["category"]}] {test["description"]}"
+                message = f"[{test['category']}] {test['description']}"
                 with self.subTest(message=message):
                     evaluate = compile(test["query"])
                     self.assertEqual(evaluate(test["input"]), test["output"])

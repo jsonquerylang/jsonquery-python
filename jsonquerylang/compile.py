@@ -58,6 +58,7 @@ def compile(
         # a static value (string, number, boolean, or null)
         return lambda _: query
 
+
 def build_function(fn):
     def evaluate_fn(*args):
         compiled_args = list(map(compile, args))

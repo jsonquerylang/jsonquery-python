@@ -18,7 +18,7 @@ class ParseTestCase(unittest.TestCase):
 
             for group in suite["groups"]:
                 for test in group["tests"]:
-                    message = f"[{group["category"]}] {group["description"]} (input: {test["input"]})"
+                    message = f"[{group['category']}] {group['description']} (input: {test['input']})"
 
                     if "output" in test:
                         with self.subTest(message=message):

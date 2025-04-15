@@ -18,6 +18,8 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+To update requirements.txt, use https://azurda.github.io/
+
 ## Test
 
 ```bash
