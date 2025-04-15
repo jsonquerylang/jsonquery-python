@@ -83,7 +83,8 @@ Where:
 - `data` is a JSON object or array
 - `query` is a JSON query or string containing a text query
 - `options` is an optional object which can have the following options:
-  - `functions` an object with custom functions
+  - `functions` an object with custom functions, see section [Custom functions](#custom-functions).
+  - `operators` a list with custom operators, see section [Custom operators](#custom-operators).
 
 Example:
 
@@ -91,13 +92,13 @@ Example:
 from pprint import pprint
 from jsonquerylang import jsonquery
 
-input = [
+data = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
     {"name": "Joe", "age": 32, "scores": [6.1, 8.1]},
     {"name": "Emily", "age": 19},
 ]
 query = ["sort", ["get", "age"], "desc"]
-output = jsonquery(input, query)
+output = jsonquery(data, query)
 pprint(output)
 # [{'age': 32, 'name': 'Joe', 'scores': [6.1, 8.1]},
 #  {'age': 23, 'name': 'Chris', 'scores': [7.2, 5, 8.0]},
@@ -118,7 +119,7 @@ Where:
 
 - `query` is a JSON query or string containing a text query
 - `options` is an optional object which can have the following options:
-  - `functions` an object with custom functions
+  - `functions` an object with custom functions, see section [Custom functions](#custom-functions).
 
 The function returns a lambda function which can be executed by passing JSON data as first argument.
 
@@ -128,14 +129,14 @@ Example:
 from pprint import pprint
 from jsonquerylang import compile
 
-input = [
+data = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
     {"name": "Joe", "age": 32, "scores": [6.1, 8.1]},
     {"name": "Emily", "age": 19},
 ]
 query = ["sort", ["get", "age"], "desc"]
 queryMe = compile(query)
-output = queryMe(input)
+output = queryMe(data)
 pprint(output)
 # [{'age': 32, 'name': 'Joe', 'scores': [6.1, 8.1]},
 #  {'age': 23, 'name': 'Chris', 'scores': [7.2, 5, 8.0]},
@@ -156,8 +157,8 @@ Where:
 
 - `textQuery`: A query in text format
 - `options`: An optional object which can have the following properties:
-  - `functions` an object with custom functions
-  - `operators` a list with custom operators
+  - `functions` an object with custom functions, see section [Custom functions](#custom-functions).
+  - `operators` a list with custom operators, see section [Custom operators](#custom-operators)
 
 Example:
 
@@ -189,8 +190,8 @@ Where:
 
 - `query` is a JSON Query
 - `options` is an optional object that can have the following properties:
-  - `operators` a list with custom operators
-  - `indentation` a string containing the desired indentation, defaults to two spaces: `"  "`
+  - `operators` a list with custom operators, see section [Custom operators](#custom-operators).
+  - `indentation` a string containing the desired indentation, defaults to two spaces: `"  "`.
   - `max_line_length` a number with the maximum line length, used for wrapping contents. Default value: `40`.
 
 Example:
@@ -208,6 +209,85 @@ jsonQuery = [
 textQuery = stringify(jsonQuery)
 print(textQuery)
 # '.friends | filter(.city == "new York") | sort(.age) | pick(.name, .age)'
+```
+
+## Custom functions
+
+The functions `jsonquery`, `compile`, and `parse` accept custom functions. Custom functions are passed as an object with the key being the function name, and the value being a factory function.
+
+Here is a minimal example which adds a function `times` to JSON Query:
+
+```python
+from jsonquerylang import jsonquery, JsonQueryOptions
+
+
+def fn_times(value):
+    return lambda array: list(map(lambda item: item * value, array))
+
+
+data = [2, 3, 8]
+query = 'times(2)'
+options: JsonQueryOptions = {"functions": {"times": fn_times}}
+
+print(jsonquery(data, query, options))
+# [4, 6, 16]
+```
+
+In the example above, the argument `value` is static. When the parameters are not static, the function `compile` can be used to compile them. For example, the function filter is implemented as follows:
+
+```python
+from jsonquerylang import compile, JsonQueryOptions
+
+def truthy(value):
+    return value not in [False, 0, None]
+
+def fn_filter(predicate):
+    _predicate = compile(predicate)
+
+    return lambda data: list(filter(lambda item: truthy(_predicate(item)), data))
+
+options: JsonQueryOptions = {"functions": {"filter": fn_filter}}
+```
+
+You can have a look at the source code of the functions in [`/jsonquerylang/functions.py`](/jsonquerylang/functions.py) for more examples.
+
+## Custom operators
+
+The functions `jsonquery`, `parse`, and `stringify` accept custom operators. Custom operators are passed as a list with operators definitions. In practice, often both a custom operator and a corresponding custom function are configured. Each custom operator is an object with:
+
+- Two required properties `name` and `op` to specify the function name and operator name, for example `{ "name": "add", "op": "+", ... }`
+- One of the three properties `at`, `before`, or `after`, specifying the precedence compared to an existing operator.
+- optionally, the property `left_associative` can be set to `True` to allow using a chain of multiple operators without parenthesis, like `a and b and c`. Without this, an exception will be thrown, which can be solved by using parenthesis like `(a and b) and c`.
+- optionally, the property `vararg` can be set to `True` when the function supports a variable number of arguments, like `and(a, b, c, ...)`. In that case, a chain of operators like `a and b and c` will be parsed into the JSON Format `["and", a, b, c, ...]`.  Operators that do not support variable arguments, like `1 + 2 + 3`, will be parsed into a nested JSON Format like `["add", ["add", 1, 2], 3]`.
+
+Here is a minimal example configuring a custom operator `~=` and a corresponding function `aboutEq`:
+
+```python
+from jsonquerylang import jsonquery, compile, JsonQueryOptions
+
+
+def about_eq(a, b):
+    epsilon = 0.001
+    a_compiled = compile(a, options)
+    b_compiled = compile(b, options)
+
+    return lambda data: abs(a_compiled(data) - b_compiled(data)) < epsilon
+
+
+options: JsonQueryOptions = {
+    "functions": {"aboutEq": about_eq},
+    "operators": [{"name": "aboutEq", "op": "~=", "at": "=="}],
+}
+
+scores = [
+    {"name": "Joe", "score": 2.0001, "previousScore": 1.9999},
+    {"name": "Sarah", "score": 3, "previousScore": 1.5},
+]
+query = "filter(.score ~= .previousScore)"
+unchanged_scores = jsonquery(scores, query, options)
+
+print(unchanged_scores)
+# [{'name': 'Joe', 'score': 2.0001, 'previousScore': 1.9999}]
 ```
 
 ## License
