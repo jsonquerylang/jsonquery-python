@@ -3,6 +3,7 @@ import json
 import re
 from os import path
 from jsonquerylang import compile
+from jsonquerylang.compile import build_function
 
 friends = [
     {"name": "Chris", "age": 23, "scores": [7.2, 5, 8.0]},
@@ -12,56 +13,96 @@ friends = [
 
 
 class CompileTestCase(unittest.TestCase):
-    def test_compile(self):
+    def test_unknown_function(self):
         """Raise an exception in case of an unknown function"""
         self.assertRaisesRegex(
             SyntaxError, 'Unknown function "foo"', lambda: go([], ["foo"])
         )
 
-    def test_options1(self):
-        """Test defining a custom function"""
-
-        def times(value):
-            return lambda data: list(map(lambda item: item * value, data))
-
-        query = ["times", 2]
-
-        evaluate = compile(query, {"functions": {"times": times}})
-
-        self.assertEqual(evaluate([2, 3, 4]), [4, 6, 8])
-        self.assertEqual(evaluate([-4, 5]), [-8, 10])
-
-    def test_options2(self):
-        """Test define options but no custom function"""
+    def test_pass_empty_options(self):
+        """Test define empty options object"""
 
         query = ["get", "name"]
         evaluate = compile(query, {})
 
         self.assertEqual(evaluate({"name": "Joe"}), "Joe")
 
+    def test_options1(self):
+        """should define a custom function"""
+        options = {
+            "functions": {
+                "times": lambda value: lambda data: [item * value for item in data]
+            }
+        }
+
+        self.assertEqual(go([1, 2, 3], ["times", 2], options), [2, 4, 6])
+        with self.assertRaises(Exception) as context:
+            go([1, 2, 3], ["times", 2])
+        self.assertIn('Unknown function "times"', str(context.exception))
+
+    def test_options2(self):
+        """should extend with a custom function with more than 2 arguments"""
+
+        def one_of(value, a, b, c):
+            return value == a or value == b or value == c
+
+        options = {"functions": {"oneOf": build_function(one_of)}}
+
+        self.assertTrue(go("C", ["oneOf", ["get"], "A", "B", "C"], options))
+        self.assertFalse(go("D", ["oneOf", ["get"], "A", "B", "C"], options))
+
     def test_options3(self):
-        """Test defining a custom function that uses compile"""
+        """should override an existing function"""
+        options = {"functions": {"sort": lambda: lambda _data: "custom sort"}}
 
-        def by_times(data_path, value):
-            getter = compile(data_path)
+        self.assertEqual(go([2, 3, 1], ["sort"], options), "custom sort")
 
-            return lambda data: list(map(lambda item: getter(item) * value, data))
+    def test_options4(self):
+        """should be able to insert a function in a nested compile"""
 
-        query = ["by_times", ["get", "score"], 2]
-        evaluate = compile(query, {"functions": {"by_times": by_times}})
+        def times(value):
+            _options = {"functions": {"foo": lambda: lambda _data: 42}}
+            _value = compile(value, _options)
+            return lambda data: [item * _value(data) for item in data]
 
-        self.assertEqual(
-            evaluate(
-                [
-                    {"score": 2},
-                    {"score": 4},
-                ]
-            ),
-            [4, 8],
-        )
+        options = {"functions": {"times": times}}
+
+        self.assertEqual(go([1, 2, 3], ["times", 2], options), [2, 4, 6])
+        self.assertEqual(go([1, 2, 3], ["times", ["foo"]], options), [42, 84, 126])
+
+        with self.assertRaises(Exception) as context:
+            go([1, 2, 3], ["foo"], options)
+        self.assertIn('Unknown function "foo"', str(context.exception))
+
+    def test_options6(self):
+        """should clean up the custom function stack when creating a query throws an error"""
+        options = {
+            "functions": {
+                "sort": lambda: (_ for _ in ()).throw(Exception("Test Error"))
+            }
+        }
+
+        with self.assertRaises(Exception) as context:
+            go({}, ["sort"], options)
+        self.assertEqual(str(context.exception), "Test Error")
+
+        # Should fall back to default behavior
+        self.assertEqual(go([2, 3, 1], ["sort"]), [1, 2, 3])
+
+    def test_options7(self):
+        """should extend with a custom function aboutEq"""
+
+        def about_eq(a, b):
+            epsilon = 0.001
+            return abs(a - b) < epsilon
+
+        options = {"functions": {"aboutEq": build_function(about_eq)}}
+
+        self.assertTrue(go({"a": 2}, ["aboutEq", ["get", "a"], 2], options))
+        self.assertTrue(go({"a": 1.999}, ["aboutEq", ["get", "a"], 2], options))
 
     def test_error_handling1(self):
-        """Should throw a helpful error when a pipe contains a compile time error"""
+        """should throw a helpful error when a pipe contains a compile time error"""
 
         query = ["foo", 42]
 
@@ -146,14 +187,14 @@ class CompileTestCase(unittest.TestCase):
             suite = json.load(read_file)
 
             for test in suite["tests"]:
-                message = f"[{test["category"]}] {test["description"]}"
+                message = f"[{test['category']}] {test['description']}"
                 with self.subTest(message=message):
                     evaluate = compile(test["query"])
                     self.assertEqual(evaluate(test["input"]), test["output"])
 
 
-def go(data, query):
-    evaluate = compile(query)
+def go(data, query, options=None):
+    evaluate = compile(query, options)
 
     return evaluate(data)
 

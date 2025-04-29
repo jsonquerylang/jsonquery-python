@@ -1,17 +1,25 @@
 import json
+from functools import reduce
 from typing import Optional, Callable, Pattern, Final
 
-from jsonquerylang.compile import functions
-from jsonquerylang.constants import (
+from jsonquerylang.compile import compile, build_function
+from jsonquerylang.functions import get_functions
+from jsonquerylang.regexps import (
     starts_with_whitespace_regex,
     starts_with_keyword_regex,
     starts_with_int_regex,
     starts_with_number_regex,
     starts_with_unquoted_property_regex,
     starts_with_string_regex,
-    operators,
 )
-from jsonquerylang.types import JsonQueryParseOptions, JsonQueryType
+from jsonquerylang.operators import (
+    operators,
+    extend_operators,
+    left_associative_operators,
+    vararg_operators,
+)
+from jsonquerylang.types import JsonQueryParseOptions, JsonQueryType, OperatorGroup
+from jsonquerylang.utils import merge
 
 
 def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQueryType:
@@ -36,65 +44,94 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
     :param options: Can an object with custom operators and functions
     :return: Returns the query in JSON format
     """
-    jsonQuery = [
-        "pipe",
-        ["get", "friends"],
-        ["filter", ["eq", ["get", "city"], "New York"]],
-        ["sort", ["get", "age"]],
-        ["pick", ["get", "name"], ["get", "age"]],
-    ]
-    custom_operators: Final = (options.get("operators") if options else None) or {}
-    custom_functions: Final = (options.get("functions") if options else None) or {}
-    all_functions: Final = {**functions, **custom_functions}
-    all_operators: Final = {**operators, **custom_operators}
-    sorted_operator_names: Final = sorted(
-        all_operators.keys(), key=lambda name: len(name), reverse=True
+
+    functions = get_functions(lambda q: compile(q, options), build_function)
+    custom_functions: Final = options.get("functions", {}) if options else {}
+    custom_operators: Final = options.get("operators", []) if options else []
+
+    all_functions: Final = merge(functions, custom_functions)
+    all_operators: Final = extend_operators(operators, custom_operators)
+    all_operators_map: Final = reduce(merge, all_operators)
+    all_vararg_operators: Final = vararg_operators + list(
+        map(
+            lambda op: op.get("op"),
+            filter(lambda op: op.get("vararg"), custom_operators),
+        )
+    )
+    all_left_associative_operators: Final = left_associative_operators + list(
+        map(
+            lambda op: op.get("op"),
+            filter(lambda op: op.get("left_associative"), custom_operators),
+        )
     )
 
     i = 0
 
-    def parse_pipe():
+    def parse_operator(precedence_level: int = len(all_operators) - 1):
         nonlocal i
 
-        skip_whitespace()
-        first = parse_operator()
-        skip_whitespace()
+        if precedence_level < 0:
+            return parse_parenthesis()
 
-        if get_char() == "|":
-            pipe = [first]
+        current_operators = all_operators[precedence_level]
 
-            while i < len(query) and get_char() == "|":
-                i += 1
-                skip_whitespace()
-                pipe.append(parse_operator())
+        left_parenthesis = get_char() == "("
+        left = parse_operator(precedence_level - 1)
 
-            return ["pipe", *pipe]
+        while True:
+            skip_whitespace()
 
-        return first
+            start = i
+            name = parse_operator_name(current_operators)
+            if not name:
+                break
 
-    def parse_operator():
-        nonlocal i
+            right = parse_operator(precedence_level - 1)
 
-        left = parse_parenthesis()
+            child_name = left[0] if type(left) is list else None
+            chained = name == child_name and not left_parenthesis
+            if (
+                chained
+                and all_operators_map[name] not in all_left_associative_operators
+            ):
+                i = start
+                break
 
-        skip_whitespace()
-
-        for name in sorted_operator_names:
-            op = all_operators[name]
-            if query[i : i + len(op)] == op:
-                i += len(op)
-                skip_whitespace()
-                right = parse_parenthesis()
-                return [name, left, right]
+            left = (
+                [*left, right]
+                if chained and all_operators_map[name] in all_vararg_operators
+                else [name, left, right]
+            )
 
         return left
+
+    def parse_operator_name(current_operators: OperatorGroup) -> str | None:
+        nonlocal i
+
+        # we sort the operators from longest to shortest, so we first handle "<=" and next "<"
+        sorted_operator_names: Final = sorted(
+            current_operators.keys(), key=lambda _name: len(_name), reverse=True
+        )
+
+        for name in sorted_operator_names:
+            op = current_operators[name]
+            if query[i : i + len(op)] == op:
+                i += len(op)
+
+                skip_whitespace()
+
+                return name
+
+        return None
 
     def parse_parenthesis():
         nonlocal i
 
+        skip_whitespace()
+
         if get_char() == "(":
             i += 1
-            inner = parse_pipe()
+            inner = parse_operator()
             eat_char(")")
             return inner
 
@@ -135,11 +172,11 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
 
         skip_whitespace()
 
-        args = [parse_pipe()] if get_char() != ")" else []
+        args = [parse_operator()] if get_char() != ")" else []
         while i < len(query) and get_char() != ")":
             skip_whitespace()
             eat_char(",")
-            args.append(parse_pipe())
+            args.append(parse_operator())
 
         eat_char(")")
 
@@ -166,7 +203,7 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
                 skip_whitespace()
                 eat_char(":")
 
-                object[key] = parse_pipe()
+                object[key] = parse_operator()
 
             eat_char("}")
 
@@ -205,7 +242,7 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
                     eat_char(",")
                     skip_whitespace()
 
-                array.append(parse_pipe())
+                array.append(parse_operator())
 
             eat_char("]")
 
@@ -273,7 +310,7 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
     def raise_error(message: str, pos: Optional[int] = i):
         raise SyntaxError(f"{message} (pos: {pos if pos else i})")
 
-    output = parse_pipe()
+    output = parse_operator()
     parse_end()
 
     return output

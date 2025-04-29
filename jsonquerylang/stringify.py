@@ -1,7 +1,13 @@
 import json
+from functools import reduce
 from typing import List, Optional, Union, Final
 
-from jsonquerylang.constants import operators, unquoted_property_regex
+from jsonquerylang.regexps import unquoted_property_regex
+from jsonquerylang.operators import (
+    operators,
+    extend_operators,
+    left_associative_operators,
+)
 from jsonquerylang.types import (
     JsonQueryType,
     JsonQueryStringifyOptions,
@@ -9,6 +15,7 @@ from jsonquerylang.types import (
     JsonPath,
     JsonQueryFunctionType,
 )
+from jsonquerylang.utils import find_index, merge
 
 DEFAULT_MAX_LINE_LENGTH = 40
 DEFAULT_INDENTATION = "  "
@@ -46,24 +53,29 @@ def stringify(
     max_line_length: Final = (
         options.get("max_line_length") if options else None
     ) or DEFAULT_MAX_LINE_LENGTH
-    custom_operators: Final = (options.get("operators") if options else None) or {}
-    all_operators: Final = {**operators, **custom_operators}
+    custom_operators: Final = (options.get("operators") if options else None) or []
+    all_operators: Final = extend_operators(operators, custom_operators)
+    all_operators_map: Final = reduce(merge, all_operators)
+    all_left_associative_operators: Final = left_associative_operators + list(
+        map(
+            lambda op: op["op"],
+            filter(lambda op: op.get("left_associative"), custom_operators),
+        )
+    )
 
-    def _stringify(_query: JsonQueryType, indent: str) -> str:
+    def _stringify(_query: JsonQueryType, indent: str, parenthesis=False) -> str:
         if type(_query) is list:
-            return stringify_function(_query, indent)
+            return stringify_function(_query, indent, parenthesis)
         else:
             return json.dumps(_query)  # value (string, number, boolean, null)
 
-    def stringify_function(query_fn: JsonQueryFunctionType, indent: str) -> str:
+    def stringify_function(
+        query_fn: JsonQueryFunctionType, indent: str, parenthesis: bool
+    ) -> str:
         name, *args = query_fn
 
         if name == "get" and len(args) > 0:
             return stringify_path(args)
-
-        if name == "pipe":
-            args_str = stringify_args(args, indent + space)
-            return join(args_str, ["", " | ", ""], ["", f"\n{indent + space}| ", ""])
 
         if name == "object":
             return stringify_object(args[0], indent)
@@ -76,31 +88,51 @@ def stringify(
                 [f"[\n{indent + space}", f",\n{indent + space}", f"\n{indent}]"],
             )
 
-        op = all_operators.get(name)
-        if op is not None and len(args) == 2:
-            left, right = args
-            left_str = _stringify(left, indent)
-            right_str = _stringify(right, indent)
-            return f"({left_str} {op} {right_str})"
+        # operator like ".age >= 18"
+        op = all_operators_map.get(name)
+        if op:
+            start = "(" if parenthesis else ""
+            end = ")" if parenthesis else ""
 
+            def stringify_operator_arg(arg: JsonQueryType, index: int):
+                child_name = arg[0] if type(arg) is list else None
+                precedence = find_index(lambda group: name in group, all_operators)
+                child_precedence = find_index(
+                    lambda group: child_name in group, all_operators
+                )
+                child_parenthesis = (
+                    precedence < child_precedence
+                    or (precedence == child_precedence and index > 0)
+                    or (name == child_name and op not in all_left_associative_operators)
+                )
+
+                return _stringify(arg, indent + space, child_parenthesis)
+
+            args_str = [
+                stringify_operator_arg(arg, index) for index, arg in enumerate(args)
+            ]
+
+            return join(
+                args_str,
+                [start, f" {op} ", end],
+                [start, f"\n{indent + space}{op} ", end],
+            )
+
+        # regular function like "sort(.age)"
         child_indent = indent if len(args) == 1 else indent + space
         args_str = stringify_args(args, child_indent)
-        return (
-            f"{name}{args_str[0]}"
-            if len(args) == 1 and args_str[0][0] == "("
-            else join(
-                args_str,
-                [f"{name}(", ", ", ")"],
-                (
-                    [f"{name}(", f",\n{indent}", ")"]
-                    if len(args) == 1
-                    else [
-                        f"{name}(\n{child_indent}",
-                        f",\n{child_indent}",
-                        f"\n{indent})",
-                    ]
-                ),
-            )
+        return join(
+            args_str,
+            [f"{name}(", ", ", ")"],
+            (
+                [f"{name}(", f",\n{indent}", ")"]
+                if len(args) == 1
+                else [
+                    f"{name}(\n{child_indent}",
+                    f",\n{child_indent}",
+                    f"\n{indent})",
+                ]
+            ),
         )
 
     def stringify_object(query_obj: JsonQueryObjectType, indent: str) -> str:

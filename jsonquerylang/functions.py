@@ -3,17 +3,7 @@ from math import prod
 import re
 
 
-def get_functions(compile):
-    def build_function(fn):
-        def evaluate_fn(*args):
-            compiled_args = list(map(compile, args))
-
-            return lambda data: fn(
-                *list(map(lambda compiled_arg: compiled_arg(data), compiled_args))
-            )
-
-        return evaluate_fn
-
+def get_functions(compile, build_function):
     def fn_get(*path: []):
         def getter(item):
             value = item
@@ -175,8 +165,8 @@ def get_functions(compile):
     fn_min = lambda: lambda data: min(data)
     fn_max = lambda: lambda data: max(data)
 
-    fn_and = build_function(lambda a, b: a and b)
-    fn_or = build_function(lambda a, b: a or b)
+    fn_and = build_function(lambda *args: reduce(lambda a, b: a and b, args))
+    fn_or = build_function(lambda *args: reduce(lambda a, b: a or b, args))
     fn_not = build_function(lambda a: not a)
 
     def fn_exists(query_get):
