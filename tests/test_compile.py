@@ -146,35 +146,8 @@ class CompileTestCase(unittest.TestCase):
 
         self.assertRaisesRegex(
             RuntimeError,
-            re.escape("Cannot calculate the average of an empty list"),
+            re.escape("Non-empty array expected"),
             lambda: go(score_data, query),
-        )
-
-    def test_error_handling4(self):
-        """should throw an error when calculating the sum of an empty array"""
-
-        self.assertRaisesRegex(
-            RuntimeError,
-            re.escape("Cannot calculate the sum of an empty list"),
-            lambda: go([], ["sum"]),
-        )
-
-    def test_error_handling5(self):
-        """should throw an error when calculating the prod of an empty array"""
-
-        self.assertRaisesRegex(
-            RuntimeError,
-            re.escape("Cannot calculate the prod of an empty list"),
-            lambda: go([], ["prod"]),
-        )
-
-    def test_error_handling6(self):
-        """should throw an error when calculating the average of an empty array"""
-
-        self.assertRaisesRegex(
-            RuntimeError,
-            re.escape("Cannot calculate the average of an empty list"),
-            lambda: go([], ["average"]),
         )
 
     def test_suite(self):
@@ -186,11 +159,22 @@ class CompileTestCase(unittest.TestCase):
         with open(test_suite_file, "r") as read_file:
             suite = json.load(read_file)
 
-            for test in suite["tests"]:
-                message = f"[{test['category']}] {test['description']}"
-                with self.subTest(message=message):
+            for group in suite["groups"]:
+                for test in group["tests"]:
+                    message = f"[{group['category']}] {group['description']} (input: {test['input']})"
+
                     evaluate = compile(test["query"])
-                    self.assertEqual(evaluate(test["input"]), test["output"])
+
+                    if "output" in test:
+                        with self.subTest(message=message):
+                            self.assertEqual(evaluate(test["input"]), test["output"])
+                    else:
+                        with self.subTest(message=message):
+                            self.assertRaisesRegex(
+                                RuntimeError,
+                                re.escape(test["throws"]),
+                                lambda: evaluate(test["input"]),
+                            )
 
 
 def go(data, query, options=None):

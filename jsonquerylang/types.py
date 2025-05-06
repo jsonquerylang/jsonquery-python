@@ -57,5 +57,4 @@ class JsonQueryStringifyOptions(TypedDict):
 
 
 class JsonQueryParseOptions(TypedDict):
-    functions: NotRequired[Mapping[str, bool] | Mapping[str, Callable]]
     operators: NotRequired[list[CustomOperator]]

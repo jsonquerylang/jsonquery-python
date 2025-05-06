@@ -2,8 +2,6 @@ import json
 from functools import reduce
 from typing import Optional, Callable, Pattern, Final
 
-from jsonquerylang.compile import compile, build_function
-from jsonquerylang.functions import get_functions
 from jsonquerylang.regexps import (
     starts_with_whitespace_regex,
     starts_with_keyword_regex,
@@ -45,11 +43,8 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
     :return: Returns the query in JSON format
     """
 
-    functions = get_functions(lambda q: compile(q, options), build_function)
-    custom_functions: Final = options.get("functions", {}) if options else {}
     custom_operators: Final = options.get("operators", []) if options else []
 
-    all_functions: Final = merge(functions, custom_functions)
     all_operators: Final = extend_operators(operators, custom_operators)
     all_operators_map: Final = reduce(merge, all_operators)
     all_vararg_operators: Final = vararg_operators + list(
@@ -166,9 +161,6 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
             return parse_object()
 
         i += 1
-
-        if name not in all_functions:
-            raise_error(f"Unknown function '{name}'")
 
         skip_whitespace()
 
