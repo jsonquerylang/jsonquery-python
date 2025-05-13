@@ -58,12 +58,20 @@ def get_functions(compile, build_function):
     def fn_filter(predicate):
         _predicate = compile(predicate)
 
-        return lambda data: list(filter(lambda item: truthy(_predicate(item)), data))
+        return (
+            lambda data: raise_array_expected()
+            if type(data) is not list
+            else list(filter(lambda item: truthy(_predicate(item)), data))
+        )
 
     def fn_map(callback):
         _callback = compile(callback)
 
-        return lambda data: list(map(_callback, data))
+        return (
+            lambda data: raise_array_expected()
+            if type(data) is not list
+            else list(map(_callback, data))
+        )
 
     def fn_map_object(callback):
         _callback = compile(callback)
@@ -157,7 +165,7 @@ def get_functions(compile, build_function):
     fn_join = lambda separator="": lambda data: separator.join(data)
     fn_split = build_function(
         lambda text, separator=None: (
-            text.split(separator) if separator is not "" else split_chars(text)
+            text.split(separator) if separator != "" else split_chars(text)
         )
     )
     fn_substring = build_function(
@@ -179,33 +187,50 @@ def get_functions(compile, build_function):
     fn_size = lambda: lambda data: len(data)
     fn_keys = lambda: lambda data: list(data.keys())
     fn_values = lambda: lambda data: list(data.values())
-    fn_prod = lambda: lambda data: prod(validate_non_empty_list(data))
-    fn_sum = lambda: lambda data: sum(validate_list(data)) if not empty(data) else 0
-    fn_average = lambda: lambda data: sum(validate_non_empty_list(data)) / len(data)
 
-    def fn_min():
-        def _fn_min(data):
-            validate_list(data)
-            return min(data) if not empty(data) else None
+    fn_prod = (
+        lambda: lambda data: raise_array_expected()
+        if type(data) is not list
+        else None
+        if empty(data)
+        else prod(data)
+    )
 
-        return _fn_min
+    fn_sum = (
+        lambda: lambda data: raise_array_expected()
+        if type(data) is not list
+        else sum(data)
+    )
 
-    def fn_max():
-        def _fn_max(data):
-            validate_list(data)
-            return max(data) if not empty(data) else None
+    fn_average = (
+        lambda: lambda data: raise_array_expected()
+        if type(data) is not list
+        else None
+        if empty(data)
+        else sum(data) / len(data)
+    )
 
-        return _fn_max
+    fn_max = (
+        lambda: lambda data: raise_array_expected()
+        if type(data) is not list
+        else None
+        if empty(data)
+        else max(data)
+    )
+
+    fn_min = (
+        lambda: lambda data: raise_array_expected()
+        if type(data) is not list
+        else None
+        if empty(data)
+        else min(data)
+    )
 
     fn_and = build_function(
-        lambda *args: reduce(lambda a, b: a and b, args)
-        if args
-        else raise_runtime_error("Non-empty array expected")
+        lambda *args: reduce(lambda a, b: a and b, args) if not empty(args) else None
     )
     fn_or = build_function(
-        lambda *args: reduce(lambda a, b: a or b, args)
-        if args
-        else raise_runtime_error("Non-empty array expected")
+        lambda *args: reduce(lambda a, b: a or b, args) if args else None
     )
     fn_not = build_function(lambda a: not a)
 
@@ -263,16 +288,16 @@ def get_functions(compile, build_function):
         return a == b
 
     def gt(a, b):
-        if (type(a) is type(b)) and (type(a) in sortable_types):
-            return a > b
+        return a > b if (type(a) is type(b)) and (type(a) in sortable_types) else False
 
-        raise RuntimeError("Two numbers, strings, or booleans expected")
+    def lt(a, b):
+        return a < b if (type(a) is type(b)) and (type(a) in sortable_types) else False
 
     fn_eq = build_function(eq)
     fn_gt = build_function(gt)
     fn_gte = build_function(lambda a, b: gt(a, b) or eq(a, b))
-    fn_lt = build_function(lambda a, b: gt(b, a))
-    fn_lte = build_function(lambda a, b: gt(b, a) or eq(b, a))
+    fn_lt = build_function(lt)
+    fn_lte = build_function(lambda a, b: lt(a, b) or eq(a, b))
     fn_ne = build_function(lambda a, b: not eq(a, b))
 
     fn_add = build_function(
@@ -399,21 +424,15 @@ def empty(array):
     return len(array) == 0
 
 
-def validate_list(data):
-    if type(data) is not list:
-        raise_runtime_error("Array expected")
-
-    return data
-
-
-def validate_non_empty_list(data):
-    validate_list(data)
-
-    if empty(data):
-        raise_runtime_error("Non-empty array expected")
-
-    return data
+def raise_array_expected():
+    raise RuntimeError("Array expected")
 
 
 def raise_runtime_error(message: str):
     raise RuntimeError(message)
+
+
+def validate_list(data):
+    if type(data) is not list:
+        raise_array_expected()
+    return data

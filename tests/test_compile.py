@@ -139,15 +139,13 @@ class CompileTestCase(unittest.TestCase):
         query = [
             "pipe",
             ["get", "participants"],
-            ["filter", ["gte", ["get", "age"], 65]],
-            ["map", ["get", "age"]],
-            ["average"],
+            ["map", ["pipe", ["get", "scores"], ["sum"]]],
         ]
 
         self.assertRaisesRegex(
             RuntimeError,
-            re.escape("Non-empty array expected"),
-            lambda: go(score_data, query),
+            re.escape("Array expected"),
+            lambda: print(go(score_data, query)),
         )
 
     def test_suite(self):
@@ -173,7 +171,7 @@ class CompileTestCase(unittest.TestCase):
                             self.assertRaisesRegex(
                                 RuntimeError,
                                 re.escape(test["throws"]),
-                                lambda: evaluate(test["input"]),
+                                lambda: print(evaluate(test["input"])),
                             )
 
 

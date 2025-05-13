@@ -2,7 +2,7 @@ import unittest
 from jsonquerylang.operators import extend_operators
 
 
-class CompileTestCase(unittest.TestCase):
+class OperatorsTestCase(unittest.TestCase):
     def test_custom_operator_at(self):
         """Test defining a custom operator at a given precedence"""
 
