@@ -51,7 +51,7 @@ def get_functions(compile, build_function):
         return evaluate_object
 
     def fn_array(*items):
-        getters = map(compile, items)
+        getters = list(map(compile, items))
 
         return lambda data: list(map(lambda getter: getter(data), getters))
 
@@ -98,7 +98,7 @@ def get_functions(compile, build_function):
         return lambda data: {key: _callback(value) for key, value in data.items()}
 
     def fn_pipe(*entries):
-        getters = map(compile, entries)
+        getters = list(map(compile, entries))
 
         return lambda data: reduce(lambda value, getter: getter(value), getters, data)
 
@@ -262,13 +262,13 @@ def get_functions(compile, build_function):
 
     def fn_in(path, in_values):
         getter = compile(path)
-        _values = map(compile, in_values)
+        _values = list(map(compile, in_values))
 
         return lambda data: getter(data) in map(lambda _value: _value(data), _values)
 
     def fn_not_in(path, not_in_values):
         getter = compile(path)
-        _values = map(compile, not_in_values)
+        _values = list(map(compile, not_in_values))
 
         return lambda data: getter(data) not in map(
             lambda _value: _value(data), _values
