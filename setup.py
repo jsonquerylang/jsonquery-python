@@ -9,7 +9,7 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="jsonquerylang",
-    version="2.0.0",
+    version="2.0.1",
     packages=find_packages(include=["jsonquerylang"]),
     description="A lightweight, flexible, and expandable JSON query language",
     long_description=long_description,
