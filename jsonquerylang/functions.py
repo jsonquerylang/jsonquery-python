@@ -172,14 +172,21 @@ def get_functions(compile, build_function):
         lambda text, start, end=None: text[max(start, 0) : end]
     )
 
+    def contains(data, search_item):
+        for item in data:
+            if eq(item, search_item):
+                return True
+
+        return False
+
     def uniq(data):
-        res = []
+        uniq_data = []
 
         for item in data:
-            if item not in res:
-                res.append(item)
+            if not contains(uniq_data, item):
+                uniq_data.append(item)
 
-        return res
+        return uniq_data
 
     fn_uniq = lambda: uniq
     fn_uniq_by = lambda path: lambda data: list(fn_key_by(path)(data).values())
@@ -285,7 +292,7 @@ def get_functions(compile, build_function):
         return lambda value: regex.match(getter(value)) is not None
 
     def eq(a, b):
-        return a == b
+        return a == b and type(a) == type(b)
 
     def gt(a, b):
         return a > b if (type(a) is type(b)) and (type(a) in sortable_types) else False

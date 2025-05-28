@@ -1,6 +1,6 @@
 {
-  "source": "https://github.com/jsonquerylang/jsonquery/blob/v5.0.0/test-suite/compile.test.json",
-  "version": "5.0.0",
+  "source": "https://github.com/jsonquerylang/jsonquery/blob/v5.0.3/test-suite/compile.test.json",
+  "version": "5.0.3",
   "groups": [
     {
       "category": "value",
@@ -961,6 +961,17 @@
       ]
     },
     {
+      "category": "uniq",
+      "description": "should get unique values from a list with mixed nullish types",
+      "tests": [
+        {
+          "input": [null, null, false, 0, "", null, false, 0, ""],
+          "query": ["uniq"],
+          "output": [null, false, 0, ""]
+        }
+      ]
+    },
+    {
       "category": "uniqBy",
       "description": "should get unique objects by key (keeping the first)",
       "tests": [
@@ -1208,7 +1219,10 @@
         { "input": null, "query": ["eq", true, false], "output": false },
         { "input": null, "query": ["eq", false, true], "output": false },
         { "input": null, "query": ["eq", false, true], "output": false },
-        { "input": null, "query": ["eq", null, null], "output": true }
+        { "input": null, "query": ["eq", false, false], "output": true },
+        { "input": null, "query": ["eq", null, null], "output": true },
+        { "input": null, "query": ["eq", 0, 0], "output": true },
+        { "input": null, "query": ["eq", "", ""], "output": true }
       ]
     },
     {
@@ -1221,6 +1235,7 @@
         { "input": null, "query": ["eq", "", null], "output": false },
         { "input": null, "query": ["eq", null, ""], "output": false },
         { "input": null, "query": ["eq", 0, null], "output": false },
+        { "input": null, "query": ["eq", 0, false], "output": false },
         { "input": null, "query": ["eq", ["array"], null], "output": false },
         { "input": null, "query": ["eq", ["array", 2], 2], "output": false }
       ]
@@ -1550,7 +1565,11 @@
           "query": ["ne", ["get", "a"], ["get", "b"]],
           "output": true
         },
-        { "input": null, "query": ["ne", 3, 2], "output": true }
+        { "input": null, "query": ["ne", 3, 2], "output": true },
+        { "input": null, "query": ["ne", false, false], "output": false },
+        { "input": null, "query": ["ne", null, null], "output": false },
+        { "input": null, "query": ["ne", 0, 0], "output": false },
+        { "input": null, "query": ["ne", "", ""], "output": false }
       ]
     },
     {
@@ -1561,6 +1580,7 @@
         { "input": null, "query": ["ne", "", 0], "output": true },
         { "input": null, "query": ["ne", "", null], "output": true },
         { "input": null, "query": ["ne", 0, null], "output": true },
+        { "input": null, "query": ["ne", false, null], "output": true },
         { "input": null, "query": ["ne", ["array", 2], 2], "output": true }
       ]
     },
@@ -1826,11 +1846,16 @@
           "query": ["in", ["get", "score"], ["array", 1, 2, 5, 8]],
           "output": false
         },
-        {
-          "input": null,
-          "query": ["in", 5, ["array", 1, 2, 5, 8]],
-          "output": true
-        }
+        { "input": null, "query": ["in", 5, ["array", 1, 2, 5, 8]], "output": true },
+        { "input": null, "query": ["in", false, ["array", true, false]], "output": true },
+        { "input": null, "query": ["in", true, ["array", true, false]], "output": true },
+        { "input": null, "query": ["in", false, ["array", true]], "output": false },
+        { "input": null, "query": ["in", true, ["array", false]], "output": false },
+        { "input": null, "query": ["in", null, ["array", 1, 2, 3]], "output": false },
+        { "input": null, "query": ["in", null, ["array", null, 1, 2, 3]], "output": true },
+        { "input": null, "query": ["in", "", ["array", "A", "", "B"]], "output": true },
+        { "input": null, "query": ["in", 0, ["array", 1, 2, 3]], "output": false },
+        { "input": null, "query": ["in", 0, ["array", 0, 1, 2, 3]], "output": true }
       ]
     },
     {
@@ -1896,11 +1921,15 @@
           "query": ["not in", ["get", "score"], ["array", 1, 2, 5, 8]],
           "output": true
         },
-        {
-          "input": null,
-          "query": ["not in", 7, ["array", 1, 2, 5, 8]],
-          "output": true
-        }
+        { "input": null, "query": ["not in", 7, ["array", 1, 2, 5, 8]], "output": true },
+        { "input": null, "query": ["not in", true, ["array", true, false]], "output": false },
+        { "input": null, "query": ["not in", false, ["array", true]], "output": true },
+        { "input": null, "query": ["not in", true, ["array", false]], "output": true },
+        { "input": null, "query": ["not in", null, ["array", 1, 2, 3]], "output": true },
+        { "input": null, "query": ["not in", null, ["array", null, 1, 2, 3]], "output": false },
+        { "input": null, "query": ["not in", "", ["array", "A", "", "B"]], "output": false },
+        { "input": null, "query": ["not in", 0, ["array", 1, 2, 3]], "output": true },
+        { "input": null, "query": ["not in", 0, ["array", 0, 1, 2, 3]], "output": false }
       ]
     },
     {
