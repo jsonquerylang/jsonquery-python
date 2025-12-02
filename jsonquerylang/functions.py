@@ -292,12 +292,17 @@ def get_functions(compile, build_function):
         return lambda value: compiled_regex.match(getter(value)) is not None
 
     def match_to_json(result):
-        matches = [result.group(), *result.groups()]
-        groups = result.groupdict()
+        value = result.group()
+        groups = [*result.groups()]
+        named_groups = result.groupdict()
 
-        return (
-            {"matches": matches, "groups": groups} if groups else {"matches": matches}
-        )
+        if named_groups:
+            return {"value": value, "groups": groups, "namedGroups": named_groups}
+
+        if groups:
+            return {"value": value, "groups": groups}
+
+        return {"value": value}
 
     def fn_match(path, expression, options=None):
         compiled_regex = (

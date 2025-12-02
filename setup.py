@@ -33,7 +33,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     include_package_data=True,
-    install_requires=[
-        "regex"
-    ],
+    install_requires=["regex"],
 )
