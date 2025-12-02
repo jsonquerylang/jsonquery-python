@@ -2011,6 +2011,142 @@
           "input": null,
           "query": ["regex", "Joe", "^[A-z]+$"],
           "output": true
+        },
+        {
+          "input": null,
+          "query": ["regex", "2025", "^[A-z]+$"],
+          "output": false
+        }
+      ]
+    },
+    {
+      "category": "match",
+      "description": "should extract a regular expression match from a string",
+      "tests": [
+        {
+          "input": null,
+          "query": ["match", "Hello World!", "[A-z]+"],
+          "output": { "matches": ["Hello"] }
+        },
+        {
+          "input": null,
+          "query": ["match", "2025-11-05", "[A-z]+"],
+          "output": null
+        },
+        {
+          "input": null,
+          "query": ["match", "Hello World!", "([A-Z])([a-z]+)"],
+          "output": { "matches": ["Hello", "H", "ello"] }
+        }
+      ]
+    },
+    {
+      "category": "match",
+      "description": "should extract a regular expression match with named capture groups from a string",
+      "tests": [
+        {
+          "input": null,
+          "query": [
+            "match",
+            "I'm on holiday from 2025-07-18 till 2025-08-01",
+            "(?<year>\\d{4})-(?<month>\\d{2})-(?<date>\\d{2})"
+          ],
+          "output": {
+            "matches": ["2025-07-18", "2025", "07", "18"],
+            "groups": { "year": "2025", "month": "07", "date": "18" }
+          }
+        },
+        {
+          "input": null,
+          "query": ["match", "Hello World!", "(?<year>\\d{4})-(?<month>\\d{2})-(?<date>\\d{2})"],
+          "output": null
+        }
+      ]
+    },
+    {
+      "category": "match",
+      "description": "should extract a regular expression match with flags from a string",
+      "tests": [
+        {
+          "input": null,
+          "query": ["match", "Hello World!", "world", ""],
+          "output": null
+        },
+        {
+          "input": null,
+          "query": ["match", "Hello World!", "world!", "i"],
+          "output": { "matches": ["World!"] }
+        },
+        {
+          "input": null,
+          "query": ["match", "Hello World!", "(?<group1>world)!", "i"],
+          "output": { "matches": ["World!", "World"], "groups": { "group1": "World" } }
+        }
+      ]
+    },
+    {
+      "category": "matchAll",
+      "description": "should extract all regular expression matches from a string",
+      "tests": [
+        {
+          "input": null,
+          "query": ["matchAll", "Hello World!", "[A-z]+"],
+          "output": [{ "matches": ["Hello"] }, { "matches": ["World"] }]
+        },
+        {
+          "input": null,
+          "query": ["matchAll", "2025-05-11", "[A-z]+"],
+          "output": []
+        },
+        {
+          "input": null,
+          "query": ["matchAll", "Hello World!", "([A-Z])([a-z]+)"],
+          "output": [{ "matches": ["Hello", "H", "ello"] }, { "matches": ["World", "W", "orld"] }]
+        }
+      ]
+    },
+    {
+      "category": "matchAll",
+      "description": "should extract all regular expression matches with named capture groups from a string",
+      "tests": [
+        {
+          "input": null,
+          "query": [
+            "matchAll",
+            "I'm on holiday from 2025-07-18 till 2025-08-01",
+            "(?<year>\\d{4})-(?<month>\\d{2})-(?<date>\\d{2})"
+          ],
+          "output": [
+            {
+              "matches": ["2025-07-18", "2025", "07", "18"],
+              "groups": { "year": "2025", "month": "07", "date": "18" }
+            },
+            {
+              "matches": ["2025-08-01", "2025", "08", "01"],
+              "groups": { "year": "2025", "month": "08", "date": "01" }
+            }
+          ]
+        },
+        {
+          "input": null,
+          "query": ["matchAll", "Hello World!", "(?<year>\\d{4})-(?<month>\\d{2})-(?<date>\\d{2})"],
+          "output": []
+        }
+      ]
+    },
+    {
+      "category": "matchAll",
+      "description": "should extract all regular expression matches with a flag from a string",
+      "tests": [
+        {
+          "input": null,
+          "query": ["matchAll", "Hello World!", "\\b[a-z]+\\b", ""],
+          "output": []
+        },
+        {
+          "input": null,
+          "query": ["matchAll", "Hello World!", "\\b[a-z]+\\b", "i"],
+          "output": [{ "matches": ["Hello"] }, { "matches": ["World"] }]
         }
       ]
     },
