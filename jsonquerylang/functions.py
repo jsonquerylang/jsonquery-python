@@ -1,6 +1,6 @@
 from functools import reduce, cmp_to_key
 from math import prod
-import re
+import regex
 
 
 def get_functions(compile, build_function):
@@ -282,14 +282,54 @@ def get_functions(compile, build_function):
         )
 
     def fn_regex(path, expression, options=None):
-        regex = (
-            re.compile(expression, flags=_parse_regex_flags(options))
+        compiled_regex = (
+            regex.compile(expression, flags=_parse_regex_flags(options))
             if options
-            else re.compile(expression)
+            else regex.compile(expression)
         )
         getter = compile(path)
 
-        return lambda value: regex.match(getter(value)) is not None
+        return lambda value: compiled_regex.match(getter(value)) is not None
+
+    def match_to_json(result):
+        value = result.group()
+        groups = [*result.groups()]
+        named_groups = result.groupdict()
+
+        if named_groups:
+            return {"value": value, "groups": groups, "namedGroups": named_groups}
+
+        if groups:
+            return {"value": value, "groups": groups}
+
+        return {"value": value}
+
+    def fn_match(path, expression, options=None):
+        compiled_regex = (
+            regex.compile(expression, flags=_parse_regex_flags(options))
+            if options
+            else regex.compile(expression)
+        )
+        getter = compile(path)
+
+        def search(value):
+            first_match = compiled_regex.search(getter(value))
+
+            return match_to_json(first_match) if first_match else None
+
+        return search
+
+    def fn_match_all(path, expression, options=None):
+        compiled_regex = (
+            regex.compile(expression, flags=_parse_regex_flags(options))
+            if options
+            else regex.compile(expression)
+        )
+        getter = compile(path)
+
+        return lambda value: [
+            match_to_json(item) for item in compiled_regex.finditer(getter(value))
+        ]
 
     def eq(a, b):
         return a == b and type(a) == type(b)
@@ -360,6 +400,8 @@ def get_functions(compile, build_function):
         "in": fn_in,
         "not in": fn_not_in,
         "regex": fn_regex,
+        "match": fn_match,
+        "matchAll": fn_match_all,
         "eq": fn_eq,
         "gt": fn_gt,
         "gte": fn_gte,
@@ -384,12 +426,12 @@ def _parse_regex_flags(flags):
         return None
 
     all_flags = {
-        "A": re.A,
-        "I": re.I,
-        "M": re.M,
-        "S": re.S,
-        "X": re.X,
-        "L": re.L,
+        "A": regex.A,
+        "I": regex.I,
+        "M": regex.M,
+        "S": regex.S,
+        "X": regex.X,
+        "L": regex.L,
     }
 
     first, *rest = flags.upper()
