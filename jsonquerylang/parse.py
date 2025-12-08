@@ -76,6 +76,12 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
         while True:
             skip_whitespace()
 
+            if get_char() == '.' and 'pipe' in current_operators:
+                # an implicitly piped property like "fn().prop"
+                right = parse_property()
+                left = [*left, right] if left[0] == 'pipe' else ['pipe', left, right]
+                continue
+
             start = i
             name = parse_operator_name(current_operators)
             if not name:
@@ -144,6 +150,8 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
                 prop = parse_key("Property expected")
 
                 props.append(prop)
+
+                skip_whitespace()
 
             return ["get", *props]
 
