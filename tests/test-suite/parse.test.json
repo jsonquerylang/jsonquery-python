@@ -1,6 +1,6 @@
 {
-  "source": "https://github.com/jsonquerylang/jsonquery/blob/v5.0.0/test-suite/parse.test.json",
-  "version": "5.0.0",
+  "source": "https://github.com/jsonquerylang/jsonquery/blob/v5.1.1/test-suite/parse.test.json",
+  "version": "5.1.1",
   "groups": [
     {
       "category": "property",
@@ -65,10 +65,6 @@
         {
           "input": ".data | groupBy(.city).myCity",
           "output": ["pipe", ["get", "data"], ["groupBy", ["get", "city"]], ["get", "myCity"]]
-        },
-        {
-          "input": "\"hello\".length",
-          "output": ["pipe", "hello", ["get", "length"]]
         }
       ]
     },
