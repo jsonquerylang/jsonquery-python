@@ -76,10 +76,10 @@ def parse(query: str, options: Optional[JsonQueryParseOptions] = None) -> JsonQu
         while True:
             skip_whitespace()
 
-            if get_char() == '.' and 'pipe' in current_operators:
+            if get_char() == "." and "pipe" in current_operators:
                 # an implicitly piped property like "fn().prop"
                 right = parse_property()
-                left = [*left, right] if left[0] == 'pipe' else ['pipe', left, right]
+                left = [*left, right] if left[0] == "pipe" else ["pipe", left, right]
                 continue
 
             start = i
