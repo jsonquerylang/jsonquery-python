@@ -13,6 +13,32 @@ friends = [
 
 
 class CompileTestCase(unittest.TestCase):
+    def test_in_function(self):
+        query = ["in", "Chris", ["array", "Chris", "Joe", "Emily"]]
+        evalute = compile(query)
+
+        self.assertTrue(evalute(None))
+
+    def test_in_function_with_expression(self):
+        """Test execution of in function"""
+        query = ["in", "Chris", ["pipe", ["get", "friends"], ["map", ["get", "name"]]]]
+        evaluate = compile(query)
+
+        self.assertTrue(evaluate({"friends": friends}))
+
+    def test_not_in_function(self):
+        query = ["not in", "Amber", ["array", "Chris", "Joe", "Emily"]]
+        evalute = compile(query)
+
+        self.assertTrue(evalute(None))
+
+    def test_not_in_function_with_expression(self):
+        """Test execution of in function"""
+        query = ["not in", "Amber", ["pipe", ["get", "friends"], ["map", ["get", "name"]]]]
+        evaluate = compile(query)
+
+        self.assertTrue(evaluate({"friends": friends}))
+
     def test_unknown_function(self):
         """Raise an exception in case of an unknown function"""
         self.assertRaisesRegex(

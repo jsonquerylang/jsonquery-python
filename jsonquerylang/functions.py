@@ -267,19 +267,14 @@ def get_functions(compile, build_function):
             else _value_if_false(data)
         )
 
-    def fn_in(path, in_values):
-        getter = compile(path)
-        _values = list(map(compile, in_values))
+    def fn_in(value, values):
+        _value = compile(value)
+        _values = compile(values)
 
-        return lambda data: getter(data) in map(lambda _value: _value(data), _values)
+        return lambda data: _value(data) in _values(data)
 
-    def fn_not_in(path, not_in_values):
-        getter = compile(path)
-        _values = list(map(compile, not_in_values))
-
-        return lambda data: getter(data) not in map(
-            lambda _value: _value(data), _values
-        )
+    def fn_not_in(value, values):
+        return lambda data: not fn_in(value, values)(data)
 
     def fn_regex(path, expression, options=None):
         compiled_regex = (
