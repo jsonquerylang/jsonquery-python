@@ -101,6 +101,27 @@ class CompileTestCase(unittest.TestCase):
         self.assertTrue(go({"a": 2}, ["aboutEq", ["get", "a"], 2], options))
         self.assertTrue(go({"a": 1.999}, ["aboutEq", ["get", "a"], 2], options))
 
+    def test_options_function_builders(self):
+        """should get custom functions from function builders"""
+
+        def sample_function_builder(compile):
+            def fn_first(values):
+                compiled_value = compile(values)
+
+                return lambda data: compiled_value(data)[0]
+
+            return {
+                "first": fn_first,
+            }
+
+        options = {"function_builders": [sample_function_builder]}
+
+        result = go(
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]], ["first", ["first", ["get"]]], options
+        )
+
+        self.assertEqual(result, 1)
+
     def test_error_handling1(self):
         """should throw a helpful error when a pipe contains a compile time error"""
 

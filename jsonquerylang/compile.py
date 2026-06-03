@@ -1,7 +1,11 @@
 import json
-from typing import Callable, Optional, Final
+from typing import Any, Callable, Mapping, Optional, Final, cast
 from jsonquerylang.functions import get_functions
 from jsonquerylang.types import JsonQueryType, JsonType, JsonQueryOptions
+
+
+CompileFunc = Callable[..., Callable[[Any], Any]]
+FunctionDict = Mapping[str, Callable[..., Any]]
 
 
 def compile(
@@ -33,10 +37,38 @@ def compile(
     :return: Returns a function which can execute the query
     """
 
-    functions = get_functions(lambda q: compile(q, options), build_function)
+    if options is None:
+        options = {}
 
-    custom_functions: Final = (options.get("functions") if options else None) or {}
-    all_functions: Final = {**functions, **custom_functions}
+    compile_inner: CompileFunc = lambda query: compile(query, options)
+
+    builtin_functions: Final[FunctionDict] = get_functions(
+        compile_inner, build_function
+    )
+
+    custom_functions: Final[FunctionDict] = cast(
+        FunctionDict, options.get("functions", {})
+    )
+
+    custom_function_builders: Final[list[Callable[[CompileFunc], FunctionDict]]] = (
+        options.get("function_builders", [])
+    )
+
+    built_custom_function_dicts = [
+        function_builder(compile_inner) for function_builder in custom_function_builders
+    ]
+
+    function_dicts: list[FunctionDict] = [
+        builtin_functions,
+        custom_functions,
+        *built_custom_function_dicts,
+    ]
+
+    all_functions = {
+        function_name: function_instance
+        for function_dict in function_dicts
+        for function_name, function_instance in function_dict.items()
+    }
 
     if type(query) is list:
         # a function like ["sort", ["get", "name"], "desc"]

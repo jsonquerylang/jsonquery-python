@@ -1,4 +1,4 @@
-from typing import TypeAlias, List, Mapping, TypedDict, Callable, NotRequired
+from typing import Any, TypeAlias, List, Mapping, TypedDict, Callable, NotRequired
 
 JsonType: TypeAlias = (
     List["JsonValueType"] | Mapping[str, "JsonValueType"] | "JsonValueType"
@@ -46,7 +46,7 @@ CustomOperator: TypeAlias = (
 
 
 class JsonQueryOptions(TypedDict):
-    functions: NotRequired[Mapping[str, Callable]]
+    functions: NotRequired[Mapping[str, Callable[..., Any]]]
     operators: NotRequired[list[CustomOperator]]
 
 
